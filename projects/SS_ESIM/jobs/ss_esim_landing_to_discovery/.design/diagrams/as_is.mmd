@@ -1,0 +1,4 @@
+flowchart LR
+  SRC[Source / ingestion] --> LND[(1 tb_landing_ss_esim)]
+  LND --> BLD[Blendata: ss_esim_landing_to_discovery]
+  BLD --> TGT[(Target tables)]
