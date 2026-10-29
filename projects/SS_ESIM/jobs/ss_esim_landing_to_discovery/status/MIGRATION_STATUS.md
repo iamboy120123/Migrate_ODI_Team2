@@ -1,6 +1,6 @@
 # Migration Status — ss_esim_landing_to_discovery (Blendata → ODI)
 
-Updated: 2026-10-29 (rev.8) | SA: 41642975+iamboy120123@users.noreply.github.com
+Updated: 2026-10-29 (rev.11) | SA: 41642975+iamboy120123@users.noreply.github.com
 
 > สร้างโดย `setup_migrate.ps1` — Claude Code อัปเดตไฟล์นี้ด้วย `/update-status` ทุกครั้งที่จบ step
 
@@ -25,7 +25,7 @@ Updated: 2026-10-29 (rev.8) | SA: 41642975+iamboy120123@users.noreply.github.com
 | 1 | Intake I1–I17 | 🔄 2026-10-29 — ปิดแล้ว I4, I12, I15 · ค้าง I10/I13 (หลัง convert / gen-export) · I14 รอ Q3 (`partitionOverwriteMode`) · I16 ยืนยัน project ซ้ำใน Studio |
 | 1-3 | Extract + Convert | ✅ 2026-10-29 — 12 task (SQL 9 · export_jdbc 999999 · non-SQL 080000, 000000) · converted 10 ไฟล์ · ✅ G1 PASS 12/12 · V6 PASS · REVIEW_FLAGS PENDING 21 (convert_sql 17 + conversion-auditor 4) |
 | 4 | SQL Review | 🔄 2026-10-29 รอบ 1 — sql-reviewer + semantic-verifier 020000/030000/040000/090000 · PHASE4_REVIEW_LOG 20 ประเด็น (FIXED 9 · NO_CHANGE 5 · OPEN 6) · 030000/090000 RESOLVED · ⛔ G2 BLOCKED (Q3 เปิด · PENDING 19 · OPEN 6) · 🟡 waiver W1–W3 (5 ประเด็นที่ขึ้นกับ Blendata, ✅ SA 2026-10-29) · Q13 `create_by` = USER ✅ · G2.M1 ✅ SA 2026-10-29 → 🟡 **G2 WAIVED** 2026-10-29 · ถัดไป `/gen-export` |
-| 5 | DML + ODI Smart Import XML | ⏳ |
+| 5 | DML + ODI Smart Import XML | ✅ 2026-10-29 build รอบ 2 (โครงพื้นฐาน) `output/odi_export/PKG_SS_ESIM_L2D.zip`: 2 variable · 11 procedure · 13 step (… 080000 → 999999 → 090000, K15) · validator 0 error · pre_delivery_gate FAIL 0 · V1/V2 PASS · retry (Q11) / Evaluate (Q2) / OdiSendMail (Q6) เลื่อนหลังรอบพื้นฐาน (SA) · SS_ESIM14 ไม่เคยรันผ่าน (SA) → ไม่ต้องเทียบตาม pre-delivery ข้อ 4 · SQL_REVIEW ✅ 5 · 🟡 5 · ⛔ 0 (⑥ คอมไพล์ DEV ผ่าน 10/10) · **เกรด B (ส่งได้ มีเงื่อนไข: waiver W1–W3)** · ⏳ รอ Smart Import (project ใหม่ SS_ESIM_L2D) |
 | 6 | DDL / DBA prereq | ⏳ (ตารางทั้ง 9 มีใน `all_tab_columns` DSSDEV แล้ว) |
 | 7 | Validation (Dev run + L1/L2/L3) | ⏳ |
 | 8 | Backfill / Cutover | ⏳ |
@@ -64,6 +64,8 @@ _(เติมหลัง Phase 5)_
 - [ ] `DESCRIBE tb_landing_ss_esim` จาก Blendata + รูปแบบข้อความของ `FIRST_INSTALLED` (Q4) · ก่อน `/review-sql`
 - [ ] sample Evaluate Variable step จาก ODI Studio (Q2) · ก่อน `/gen-export`
 - [ ] ค่า SMTP / ผู้รับ mail (Q6) · ก่อน G4
+- [ ] retry 2 × 60 วินาที (Q11) — เลื่อนหลังรอบพื้นฐาน: sample `KoRetry` จาก `ZZ_REF` → K# builder (retry) → import Overwrite
+- [ ] Evaluate `v_lag_minutes <= 120` (Q2) แล้วค่อย OdiSendMail KO path (Q6) — SA ให้เลื่อนหลังรอบพื้นฐาน 2026-10-29 · เติมทีละอย่าง (Evaluate ก่อน) · ทั้งคู่ก่อน G4
 - [ ] timezone ของ DAG / Blendata (`session.timeZone`) เทียบ `DBTIMEZONE` / `SESSIONTIMEZONE` ของ Oracle (Q5 / Q3)
 - [ ] ผู้เติม landing ใน Prod (Q4) · ก่อน G6.M3
 - [x] ADR-002 (variable precheck) → Accepted ✅ SA 2026-10-29 (Q2)
@@ -76,6 +78,9 @@ _(เติมหลัง Phase 5)_
 
 | # | ไฟล์ | รายละเอียด |
 |---|---|---|
+| K16 | `scripts/checks/review_report.py` (backup `.bak-20261029`) | 2026-10-29 bug fix: ชื่อไฟล์แบบ `task_<hex>_<code>_…` ทำให้ `split('_')[0]` = `task` ทุกไฟล์ → flag/review ของ 040000/020000 ไปนับให้ทุก task และชั้น ⑤ หา procedure ใน XML ไม่เจอ (ชื่อใน XML ตัด `task_<hex>_` ออก) · แก้ให้ใช้ `task_<hex>` และชื่อ procedure · ผล: ⛔ 10 → ✅ 5 · 🟡 3 · ⛔ 2 · `--make-compile-pack` แทน `<%=odiRef.getSchemaName(...)%>` ด้วย `odi.work_user` (DSSDEV) ไม่งั้นคอมไพล์นอก ODI ไม่ได้ · generic → `/kit-backport` |
+| K15 | `scripts/pipeline/build_odi_export.py` (backup `.bak-20261029`) | 2026-10-29 (SA อนุมัติในแชต): `seq_key` ใช้ช่อง `seq` (int) ใน `output/dml/_manifest.json` ถ้ามี แทนเลขหน้าชื่อ task · ตั้ง 999999 `seq = 85000` (หลัง 080000 ก่อน 090000 ตาม DAG) · generic → `/kit-backport` |
+| K14 | `scripts/checks/check_inputs.py` (backup `.bak-20261029`) | 2026-10-29 (SA อนุมัติในแชต): (1) ข้าม DDL ของ task `kind=export_jdbc` (gen_dml SKIP → placeholder, Q9) · (2) REVIEW_FLAGS PENDING ไม่บล็อกเมื่อมี waiver G2 `REVIEW_FLAGS PENDING` ที่ open (ตรงกับ check_gate K11) → แสดงเป็นคำเตือน · (4) `scripts/checks/verify_all.py` V4 (backup `.bak-20261029`): REVIEW_FLAGS PENDING / PHASE4_REVIEW_LOG OPEN → WARN เมื่อมี waiver G2 ที่ open ครอบ (SA อนุมัติในแชต 2026-10-29) · (5) `scripts/checks/review_report.py` ชั้น ①–③: flag PENDING / review OPEN ใต้ waiver G2 ที่ open → 🟡 (ระบุ Wn) แทน ⛔ (SA อนุมัติในแชต 2026-10-29) · (3) `scripts/pipeline/build_odi_export.py` (backup `.bak-20261029`) ด่าน REVIEW_FLAGS PENDING → `[WARN]` เมื่อมี waiver เดียวกัน (SA อนุมัติในแชต 2026-10-29) · ⚠️ waiver ครอบ PENDING ทั้งหมดของ G2 — flag ใหม่นอก W1 จะไม่ถูก builder หยุด · generic → `/kit-backport` |
 
 ## 7. ไฟล์อ้างอิง
 
@@ -97,3 +102,6 @@ _(เติมหลัง Phase 5)_
 | 7 | 2026-10-29 | `/preflight` P5: สร้าง `rp00_preflight_20261029` + เพิ่ม `P5b_blendata_d1_checks.sql` · รัน Blendata ไม่ได้ (ไม่มีผล) → waiver W1 ใน `status/GATES.md` (5 ประเด็นที่ขึ้นกับ Blendata · ปิดก่อน G5) · G2 ยัง BLOCKED |
 | 7b | 2026-10-29 | Q13 = A (`create_by` = USER) ✅ SA · review log แถว get_user → ACCEPTED · waiver W2 (log OPEN) / W3 (flag PENDING) ขอบเขตเดียวกับ W1 · G2 เหลือ G2.M1 |
 | 8 | 2026-10-29 | G2.M1 ✅ SA (ตรวจ PHASE4_REVIEW_LOG) → `check_gate.py G2` = 🟡 WAIVED (W1–W3, ปิดก่อน G5 เมื่อได้ผล P5/P5b) → พร้อม Phase 5 `/gen-export` |
+| 9 | 2026-10-29 | `/gen-export` รอบ 1: I14 = delete_by_partition ×3 · concat_policy = plain_concat · K14 (check_inputs + builder รับ waiver W3 / ข้าม DDL export_jdbc) · DML manual 080000 (DELETE, Q10) + 999999 (placeholder, Q9) · check_inputs [พร้อม] · build + validate ผ่าน · xml-auditor: REGENERATE (ลำดับ step / retry / VE / SS_ESIM14) — ยังไม่ส่ง import |
+| 10 | 2026-10-29 | K15 ลำดับ step (999999 ก่อน 090000) · build รอบ 2 reuse GlobalId 97/97 · SA: retry/Evaluate/OdiSendMail เลื่อนหลังรอบพื้นฐาน · SS_ESIM14 = งานทดสอบเก่า ไม่เคยรันผ่าน (จุดต่าง TRUNCATE→DELETE อธิบายได้ด้วย I14/Q10, CAST = TO_NUMBER, odiRef = Q8, 999999 = Q9) → พร้อม Smart Import |
+| 11 | 2026-10-29 | `/review-report`: K16 (review_report bug fix + odiRef → DSSDEV ใน compile pack) · K14 ข้อ 4–5 (V4 / review_report รับ waiver G2) · 🟡 ทั้งหมด NO_CHANGE (SA) · ⑥ คอมไพล์: คนรันใน DBeaver (`_ALL_compile.sql`, แผน 4e6d869f89) ไม่มี error 10/10 — 999999 ผ่านด้วย แปลว่า `ext_dss_checkpoint_tb_transaction_ss_esim_valid` มีอยู่ใน DEV แต่ไม่อยู่ใน `_shared_all_tab_columns.csv` (สมมติฐาน: view/synonym — ตรวจตอนปิด Q9) · grade.py = B |

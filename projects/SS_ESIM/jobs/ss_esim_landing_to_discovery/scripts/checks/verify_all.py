@@ -358,6 +358,13 @@ def review_log_rows(log: str) -> dict:
     return rows
 
 
+def g2_waiver(item):
+    """K14: ID ของ waiver G2 ที่ยัง open และคอลัมน์ 'ข้อที่ยกเว้น' ขึ้นต้นด้วย item ('' = ไม่มี) — ตรงกับ check_gate K11"""
+    ids = [l.split("|")[1].strip() for l in read("status/GATES.md").splitlines()
+           if re.match(rf"^\|\s*W\d+\s*\|\s*G2\s*\|\s*{re.escape(item)}", l, re.I) and "| open |" in l]
+    return ", ".join(ids)
+
+
 def review_state(cfg):
     """REVIEW_FLAGS + PHASE4_REVIEW_LOG (kit K-G2): ไม่มีไฟล์ ≠ ไม่มีปัญหา"""
     res = []
@@ -370,7 +377,8 @@ def review_state(cfg):
                     f"REVIEW_FLAGS ไม่มีไฟล์ `{rf_path}`" + (" ทั้งที่มี converted SQL — รัน convert_sql.py ใหม่" if has_conv else " (ยังไม่ถึง Phase 3)")))
         return res
     pend = len(re.findall(r"\|\s*PENDING\s*\|", rf))
-    res.append((FAIL if pend else PASS, f"REVIEW_FLAGS PENDING {pend}"))
+    w = g2_waiver("REVIEW_FLAGS PENDING")
+    res.append(((WARN if w else FAIL) if pend else PASS, f"REVIEW_FLAGS PENDING {pend}" + (f" (waiver {w})" if pend and w else "")))
     flagged = flagged_tasks(rf)
     log = read("status/PHASE4_REVIEW_LOG.md")
     if not flagged:
@@ -385,7 +393,8 @@ def review_state(cfg):
     if miss:
         res.append((FAIL, f"PHASE4_REVIEW_LOG ไม่ครอบคลุม task ที่ถูก flag: {', '.join(miss[:5])}"))
     if open_:
-        res.append((FAIL, f"PHASE4_REVIEW_LOG ยังมีรายการ OPEN: {', '.join(open_[:5])}"))
+        w = g2_waiver("PHASE4_REVIEW_LOG ยังมีรายการ OPEN")
+        res.append((WARN if w else FAIL, f"PHASE4_REVIEW_LOG ยังมีรายการ OPEN: {', '.join(open_[:5])}" + (f" (waiver {w})" if w else "")))
     if not miss and not open_:
         res.append((PASS, f"PHASE4_REVIEW_LOG ครอบคลุม {len(flagged)}/{len(flagged)} task · ไม่มี OPEN"))
     return res

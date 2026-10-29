@@ -1,0 +1,4 @@
+-- คอมไพล์ task_44a662474c7f4ce2b1d603c3391c002d_999999_export_data_to_mssql.sql กับฐานจริงแบบไม่ดึงข้อมูล (WHERE 1=0) · SELECT อย่างเดียว
+SELECT * FROM (
+select cdr_id,cdr_type,partner,owner,iccid,first_installed,profile_type,eid,sim_type,cp_id,service_id,before_sharing,price_rate_type,network_type,invoicing_co_id,share_basis,cdr_filename,chk_duplicate,filter_dtm,create_by,remap_dtm,remap_by,process_date,transaction_units,status,workflow_process_date,SYSDATE as bld_export_date,file_date from DSSDEV.tb_transaction_ss_esim_valid where workflow_process_date > TO_CHAR(SYSDATE-INTERVAL '7' DAY, 'YYYYMMDDHH24MISS') and workflow_process_date > (select coalesce(max_workflow_process_date_mssql,'00000000000000') as max_workflow_process_date_mssql from DSSDEV.ext_dss_checkpoint_tb_transaction_ss_esim_valid)
+) WHERE 1=0

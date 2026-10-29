@@ -1,0 +1,27 @@
+{
+  "grade": "B",
+  "date": "2026-10-29T20:25:58",
+  "gates": {
+    "G1": "PASS",
+    "G2": "WAIVED",
+    "G3": "PASS"
+  },
+  "pre_delivery": {
+    "fail": 0,
+    "warn": 0
+  },
+  "sql": [
+    5,
+    5,
+    0
+  ],
+  "must_fix": [],
+  "conditions": [
+    "G2 ผ่านด้วย waiver (ดู Waiver log ใน status/GATES.md)",
+    "SQL 🟡 5 task — ต้องมีเหตุผลบันทึก (NO_CHANGE) ทุกข้อ"
+  ],
+  "speed_pre_run": "ต้องดู",
+  "package": "PROJ_EXPORT.xml",
+  "odi_code": "SS_ESIM_L2D",
+  "id_base": 92000
+}

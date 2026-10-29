@@ -1,0 +1,231 @@
+{
+  "_readme": "สร้างโดย build_odi_export.py จาก output/dml/_manifest.json — แก้ที่ต้นทางแล้วรันใหม่ ไม่แก้ไฟล์นี้ตรง ๆ",
+  "reference_smartexport": "../../input/odi_reference/_shared_smart_export_DEV_20261028.xml",
+  "sql_dir": "converted-sql",
+  "project": {
+    "name": "SS_ESIM_L2D",
+    "code": "SS_ESIM_L2D",
+    "folder": "SS_ESIM_L2D",
+    "package": "PKG_SS_ESIM_L2D"
+  },
+  "variables": [
+    {
+      "name": "v_max_partition",
+      "sql_file": "VAR_v_max_partition.sql"
+    },
+    {
+      "name": "v_lag_minutes",
+      "sql_file": "VAR_v_lag_minutes.sql"
+    }
+  ],
+  "procedures": [
+    {
+      "name": "010000_check_success_ss_esim_landing_to_discovery_workflow_status",
+      "lines": [
+        {
+          "sql_file": "010000_check_success_ss_esim_landing_to_discovery_workflow_status__01_STEP_1_TRUNCATE.sql"
+        },
+        {
+          "sql_file": "010000_check_success_ss_esim_landing_to_discovery_workflow_status__02_STEP_2_INSERT.sql"
+        }
+      ]
+    },
+    {
+      "name": "020000_overwrite_ss_esim_checkpoint_temp",
+      "lines": [
+        {
+          "sql_file": "020000_overwrite_ss_esim_checkpoint_temp__01_STEP_1_DELETE.sql"
+        },
+        {
+          "sql_file": "020000_overwrite_ss_esim_checkpoint_temp__02_STEP_2_INSERT.sql"
+        }
+      ]
+    },
+    {
+      "name": "030000_running_ss_esim_landing_to_discovery_workflow_status",
+      "lines": [
+        {
+          "sql_file": "030000_running_ss_esim_landing_to_discovery_workflow_status__01_STEP_1_TRUNCATE.sql"
+        },
+        {
+          "sql_file": "030000_running_ss_esim_landing_to_discovery_workflow_status__02_STEP_2_INSERT.sql"
+        }
+      ]
+    },
+    {
+      "name": "040000_overwrite_ss_esim_raw_temp",
+      "lines": [
+        {
+          "sql_file": "040000_overwrite_ss_esim_raw_temp__01_STEP_1_DELETE.sql"
+        },
+        {
+          "sql_file": "040000_overwrite_ss_esim_raw_temp__02_STEP_2_INSERT.sql"
+        }
+      ]
+    },
+    {
+      "name": "050100_append_ss_esim_valid",
+      "lines": [
+        {
+          "sql_file": "050100_append_ss_esim_valid__01_STEP_1_INSERT.sql"
+        }
+      ]
+    },
+    {
+      "name": "050200_append_ss_esim_reject",
+      "lines": [
+        {
+          "sql_file": "050200_append_ss_esim_reject__01_STEP_1_INSERT.sql"
+        }
+      ]
+    },
+    {
+      "name": "050300_append_ss_esim_temp",
+      "lines": [
+        {
+          "sql_file": "050300_append_ss_esim_temp__01_STEP_1_INSERT.sql"
+        }
+      ]
+    },
+    {
+      "name": "070000_overwrite_ss_esim_checkpoint",
+      "lines": [
+        {
+          "sql_file": "070000_overwrite_ss_esim_checkpoint__01_STEP_1_DELETE.sql"
+        },
+        {
+          "sql_file": "070000_overwrite_ss_esim_checkpoint__02_STEP_2_INSERT.sql"
+        }
+      ]
+    },
+    {
+      "name": "080000_cleanup_ss_esim_raw_temp",
+      "lines": [
+        {
+          "sql_file": "080000_cleanup_ss_esim_raw_temp__01_STEP_1_DELETE.sql"
+        }
+      ]
+    },
+    {
+      "name": "999999_export_data_to_mssql",
+      "lines": [
+        {
+          "sql_file": "999999_export_data_to_mssql__01_STEP_1_PLACEHOLDER.sql"
+        }
+      ]
+    },
+    {
+      "name": "090000_success_ss_esim_landing_to_discovery_workflow_status",
+      "lines": [
+        {
+          "sql_file": "090000_success_ss_esim_landing_to_discovery_workflow_status__01_STEP_1_TRUNCATE.sql"
+        },
+        {
+          "sql_file": "090000_success_ss_esim_landing_to_discovery_workflow_status__02_STEP_2_INSERT.sql"
+        }
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "name": "v_max_partition",
+      "type": "V",
+      "ref": "v_max_partition"
+    },
+    {
+      "name": "v_lag_minutes",
+      "type": "V",
+      "ref": "v_lag_minutes"
+    },
+    {
+      "name": "010000_check_success_ss_esim_landing_to_discovery_workflow_status",
+      "type": "T",
+      "ref": "010000_check_success_ss_esim_landing_to_discovery_workflow_status"
+    },
+    {
+      "name": "020000_overwrite_ss_esim_checkpoint_temp",
+      "type": "T",
+      "ref": "020000_overwrite_ss_esim_checkpoint_temp"
+    },
+    {
+      "name": "030000_running_ss_esim_landing_to_discovery_workflow_status",
+      "type": "T",
+      "ref": "030000_running_ss_esim_landing_to_discovery_workflow_status"
+    },
+    {
+      "name": "040000_overwrite_ss_esim_raw_temp",
+      "type": "T",
+      "ref": "040000_overwrite_ss_esim_raw_temp"
+    },
+    {
+      "name": "050100_append_ss_esim_valid",
+      "type": "T",
+      "ref": "050100_append_ss_esim_valid"
+    },
+    {
+      "name": "050200_append_ss_esim_reject",
+      "type": "T",
+      "ref": "050200_append_ss_esim_reject"
+    },
+    {
+      "name": "050300_append_ss_esim_temp",
+      "type": "T",
+      "ref": "050300_append_ss_esim_temp"
+    },
+    {
+      "name": "070000_overwrite_ss_esim_checkpoint",
+      "type": "T",
+      "ref": "070000_overwrite_ss_esim_checkpoint"
+    },
+    {
+      "name": "080000_cleanup_ss_esim_raw_temp",
+      "type": "T",
+      "ref": "080000_cleanup_ss_esim_raw_temp"
+    },
+    {
+      "name": "999999_export_data_to_mssql",
+      "type": "T",
+      "ref": "999999_export_data_to_mssql"
+    },
+    {
+      "name": "090000_success_ss_esim_landing_to_discovery_workflow_status",
+      "type": "T",
+      "ref": "090000_success_ss_esim_landing_to_discovery_workflow_status"
+    }
+  ],
+  "excluded_tasks": [],
+  "output": {
+    "xml": "PROJ_EXPORT.xml",
+    "zip": "PKG_SS_ESIM_L2D.zip"
+  },
+  "default_schema": "dssdev",
+  "ddl_file": "../../input/oracle_ddl/_shared_all_tab_columns.csv",
+  "partitions_file": "../../config/partitions_check.csv",
+  "overwrite_scope": [
+    {
+      "table": "tb_staging_ss_esim_checkpoint",
+      "decision": "I14 DECISION = delete_by_partition (partitions NOT empty)",
+      "note": "070000_overwrite_ss_esim_checkpoint"
+    },
+    {
+      "table": "tb_staging_ss_esim_checkpoint_temp",
+      "decision": "I14 DECISION = delete_by_partition (partitions NOT empty)",
+      "note": "020000_overwrite_ss_esim_checkpoint_temp"
+    },
+    {
+      "table": "tb_staging_ss_esim_landing_to_discovery_workflow_status",
+      "decision": "truncate table",
+      "note": "030000_running_ss_esim_landing_to_discovery_workflow_status"
+    },
+    {
+      "table": "tb_staging_ss_esim_landing_to_discovery_workflow_status_temp",
+      "decision": "truncate table",
+      "note": "010000_check_success_ss_esim_landing_to_discovery_workflow_status"
+    },
+    {
+      "table": "tb_staging_ss_esim_raw_temp",
+      "decision": "I14 DECISION = delete_by_partition (partitions NOT empty)",
+      "note": "040000_overwrite_ss_esim_raw_temp"
+    }
+  ]
+}

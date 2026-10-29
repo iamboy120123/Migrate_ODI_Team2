@@ -1,0 +1,2 @@
+-- Load Strategy: overwrite (step 1/2)
+TRUNCATE TABLE <%=odiRef.getSchemaName("DSS_ODI_LOG","D")%>.TB_STAGING_SS_ESIM_LANDING_TO_DISCOVERY_WORKFLOW_STATUS_TEMP

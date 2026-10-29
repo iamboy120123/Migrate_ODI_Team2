@@ -42,6 +42,7 @@
   "target_lock": {
     "smart_export": "2279a661ab4fad2d1b6b17043950cdc6b97c90619f46b6b87bed35ce6174b5f2",
     "columns": "3e911f30af004c1c9a0b385e93981d5265344ae1ac1363b542ad65a59613720d",
-    "linked_at": "2026-10-29T16:32:51+07:00"
+    "linked_at": "2026-10-29T16:32:51+07:00",
+    "locked_at_g3": "2026-10-29"
   }
 }

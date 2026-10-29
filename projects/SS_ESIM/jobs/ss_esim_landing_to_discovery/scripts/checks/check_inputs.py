@@ -174,8 +174,19 @@ def check_ddl(cfg, raw):
             have |= set(cs.load_ddl(str(f)))
         except (ValueError, OSError) as e:
             need("ddl", f"อ่าน {f.name} ไม่ได้: {e}", how)
+    # K14: task kind=export_jdbc ไม่ถูกแปลงเป็น DML (gen_dml SKIP -> placeholder) จึงไม่ต้องมี DDL ของตารางที่ SQL นั้นอ้าง
+    skip = set()
+    try:
+        for t in json.loads((raw / "_manifest.json").read_text(encoding="utf-8")):
+            if t.get("kind") == "export_jdbc" and t.get("raw_sql_file"):
+                skip.add(Path(t["raw_sql_file"]).name)
+    except (json.JSONDecodeError, OSError):
+        pass
     used = set()
     for f in raw.glob("*.sql"):
+        if f.name in skip:
+            note("ddl", f"ข้าม DDL ของ {f.stem[:60]} (export_jdbc -> placeholder ไม่มี DML)")
+            continue
         used |= table_names_from_sql(f.read_text(encoding="utf-8", errors="replace"))
     manifest = ROOT / "output" / "dml" / "_manifest.json"
     if manifest.exists():
@@ -201,6 +212,11 @@ def check_partitions(cfg):
                      "ถาม SA (I14): delete_by_partition [แนะนำ] หรือ truncate_all แล้วกรอกคอลัมน์ DECISION ใน config/partitions_check.csv")
 
 
+def read_gates():
+    p = ROOT / "status" / "GATES.md"
+    return p.read_text(encoding="utf-8") if p.exists() else ""
+
+
 def check_flags(cfg):
     p = ROOT / ((cfg.get("paths") or {}).get("review_flags") or "status/REVIEW_FLAGS.md")
     if not p.exists():
@@ -210,7 +226,13 @@ def check_flags(cfg):
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
         if len(cells) >= 4 and cells[-1].upper() == "PENDING":
             n += 1
-    if n:
+    # K14: waiver ของ G2 ที่ SA อนุมัติและยัง open ครอบ "REVIEW_FLAGS PENDING" -> ไม่บล็อก (ตรงกับ check_gate K11)
+    waived = [l for l in read_gates().splitlines()
+              if re.match(r"^\|\s*W\d+\s*\|\s*G2\s*\|\s*REVIEW_FLAGS PENDING", l, re.I) and "| open |" in l]
+    if n and waived:
+        note("review", f"status/REVIEW_FLAGS.md ยังมี PENDING {n} จุด -- อยู่ใต้ waiver "
+             + ", ".join(l.split("|")[1].strip() for l in waived) + " (status/GATES.md)")
+    elif n:
         need("review", f"status/REVIEW_FLAGS.md ยังมี PENDING {n} จุด",
              "แก้ SQL ใน output/sql/converted/ ตามกฎ md15 appendix D (ถามผู้ใช้ทีละจุดเมื่อต้องตัดสินใจ) แล้วเปลี่ยนสถานะเป็น RESOLVED")
 

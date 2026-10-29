@@ -68,8 +68,13 @@ def compile_pack():
     d = ROOT / "run_packs" / "rp_compile"
     d.mkdir(parents=True, exist_ok=True)
     n = skipped = 0
+    # K16: schema_mode=odiref -- <%=odiRef.getSchemaName(...)%> รันนอก ODI ไม่ได้ (ORA-00936) -> แทนด้วย work user (physical schema ของ DEV)
+    cfg = json.loads(rd(ROOT / "config/config.json") or "{}")
+    schema = ((cfg.get("odi") or {}).get("work_user") or "").strip()
     for f in sorted(CONV.glob("*.sql")):
         sql = rd(f).strip().rstrip(";")
+        if schema:
+            sql = re.sub(r"<%=\s*odiRef\.getSchemaName\([^%]*\)\s*%>", schema, sql)
         m = re.search(r"^\s*insert\b.*?\)\s*(select\b|with\b)", sql, re.I | re.S)
         body = sql[m.start(1):] if m else (sql if re.match(r"^\s*(select|with)\b", sql, re.I) else None)
         if body is None:
@@ -107,9 +112,16 @@ def main():
             plan_warn.setdefault(Path(p[0]).stem, []).append("แผนการรัน: " + p[2][:100])
     dml = ROOT / "output/dml"
     xml = rd(ROOT / "output/odi_export/PROJ_EXPORT.xml")
+    # K14: waiver G2 ที่ SA อนุมัติและยัง open ครอบข้อนั้น -> 🟡 (ระบุ waiver) แทน ⛔ (ตรงกับ check_gate K11)
+    gates = rd(ROOT / "status/GATES.md").splitlines()
+    g2w = lambda item: ", ".join(l.split("|")[1].strip() for l in gates
+                                 if re.match(rf"^\|\s*W\d+\s*\|\s*G2\s*\|\s*{re.escape(item)}", l, re.I) and "| open |" in l)
+    w_flag, w_open = g2w("REVIEW_FLAGS PENDING"), g2w("PHASE4_REVIEW_LOG ยังมีรายการ OPEN")
     rows, todo, totals = [], [], {"✅": 0, "🟡": 0, "⛔": 0}
     for f in files:
-        stem, tid = f.stem, f.stem.split("_")[0]
+        stem = f.stem
+        # K16: ชื่อแบบ task_<hex>_<code>_... -- split("_")[0] ได้ "task" ทุกไฟล์ จน flag/review ของทุก task ไปนับรวมกัน
+        tid = "_".join(stem.split("_")[:2]) if stem.startswith("task_") else stem.split("_")[0]
         mine = lambda cells: cells and (cells[0] == stem or cells[0] == tid or cells[0].startswith(tid + "_"))
         fl = [c for c in flags if mine(c) and c[0] != "Task ID"]
         lg = [c for c in log if mine(c) and c[0] != "Task"]
@@ -117,11 +129,17 @@ def main():
         bad13, warn13 = [], []
         for c in fl:
             if c[-1].upper() not in ("RESOLVED", "WAIVED"):
-                (bad13 if "CRITICAL" in c[1] else warn13).append("flag: " + c[1][:60])
+                if w_flag:
+                    warn13.append(f"flag (waiver {w_flag}): " + c[1][:60])
+                else:
+                    (bad13 if "CRITICAL" in c[1] else warn13).append("flag: " + c[1][:60])
         for c in lg:
             st = c[-1].upper()
             if st == "OPEN":
-                bad13.append("review OPEN: " + c[1][:50])
+                if w_open:
+                    warn13.append(f"review OPEN (waiver {w_open}): " + c[1][:50])
+                else:
+                    bad13.append("review OPEN: " + c[1][:50])
             if len(c) >= 6 and c[5].upper().startswith("FAIL") and st != "ACCEPTED":
                 bad13.append("semantic FAIL: " + c[5][:50])
         s13 = "⛔" if bad13 else ("🟡" if warn13 else ("✅" if fl or lg else "–"))
@@ -133,7 +151,8 @@ def main():
         s4 = "⛔" if errs else ("🟡" if open_w else "✅")
         # ⑤
         dml_f = list(dml.glob(f"{tid}*.sql")) if dml.exists() else []
-        s5 = "–" if not dml_f else ("✅" if (not xml or tid in xml or stem in xml) else "⛔")
+        proc = stem.split("_", 2)[2] if stem.startswith("task_") and stem.count("_") >= 2 else stem   # K16: ชื่อ procedure ใน XML (build_odi_export.proc_name_of)
+        s5 = "–" if not dml_f else ("✅" if (not xml or tid in xml or stem in xml or proc in xml) else "⛔")
         # ⑥ ⑦
         c6 = comp.get(stem)
         s6 = "–" if not c6 else ("✅" if c6[0] == "OK" else "⛔")

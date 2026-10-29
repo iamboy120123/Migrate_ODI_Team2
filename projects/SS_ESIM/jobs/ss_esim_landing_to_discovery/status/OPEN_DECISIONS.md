@@ -105,6 +105,7 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] B) ไม่ retry — ล้มครั้งแรกหยุดทันที
 
 > **Q11 = A (retry 2 ครั้ง × 60 วินาที ทุก step)** ✅ SA 2026-10-29 (ตอบในแชต) · ยกเว้น: placeholder 999999 (Blendata ไม่ retry) และ Evaluate Variable ของ lag precheck (Q2 — หยุดทันที ไม่ retry) · เงื่อนไข: แต่ละ step ต้อง idempotent / commit ครั้งเดียวตอนจบ — ตรวจใน `/review-sql` (Phase 4)
+> 2026-10-29: SA ให้เลื่อน retry ไปหลังรอบพื้นฐาน (pre-delivery ข้อ 5) · build รอบ 1 ไม่มี retry (builder ไม่รองรับ + reference ไม่มีตัวอย่าง `KoRetry`) · หลังรอบพื้นฐานผ่าน: SA ตั้ง retry 1 step ใน `ZZ_REF` → Smart Export → K# builder (retry) → import Overwrite
 
 ### Q12. Guard ของรอบที่ล้มกลางทาง (I15)
 ข้อเท็จจริง: 030000 overwrite status = `running` (success = NULL) · 020000 อ่าน landing เฉพาะเมื่อ `COALESCE(success, TRUE) = TRUE` → รอบที่ล้มกลางทางไม่ทำให้รอบใหม่หยุด · ล้มหลัง 050x แต่ก่อน 070000 → append ซ้ำ (GAP-01)

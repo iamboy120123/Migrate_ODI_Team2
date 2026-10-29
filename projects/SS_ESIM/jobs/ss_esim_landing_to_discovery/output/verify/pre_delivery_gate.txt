@@ -1,8 +1,7 @@
-# pre_delivery_gate.py — 2026-10-29
-
 [PASS] P1  partitions_check.csv มี 5 ตาราง (partitions ไม่ว่าง: 3)
-[WARN] P2  ยังไม่มี SQL ใน output/sql/converted หรือ output/dml -- ข้าม
+[PASS] P2  check_sql (converted) พร้อม --ddl --partitions: ไม่มี ERROR (D-R2/D-R3 = ผลของ Q8 / ตัดตอนสร้าง XML ตรวจมือแล้วเท่านั้น)
+[PASS] P3  ลำดับ DEFAULT ... ON CONVERSION ERROR ถูกทุกไฟล์
 [PASS] P4  ไม่พบ TRUNCATE ทั้งตารางบนตารางที่ partitions ไม่ว่าง
 [INFO] P6  ก่อน Smart Import (ทำครั้งเดียวตอนจบ): ตรวจ Designer ว่ามี project รหัสเดียวกันใน repository แล้วหรือไม่ (ODI-10244) -- ของที่ AI ต้องใช้ต้องครบก่อน build (รัน /inputs = scripts/checks/check_inputs.py) ไม่มีรอบ "import ลองดูก่อน"
 
-สรุป: FAIL=0 WARN=1 PASS=2
+สรุป: FAIL=0 WARN=0 PASS=4

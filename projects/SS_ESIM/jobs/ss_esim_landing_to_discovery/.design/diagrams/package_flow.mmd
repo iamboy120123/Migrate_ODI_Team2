@@ -1,2 +1,44 @@
 flowchart TD
-  START([start]) --> TODO[รัน python scripts/pipeline/gen_design_docs.py หลัง /gen-export]
+  START([start])
+  S1[/"1. v_max_partition"/]
+  START --> S1
+  S2[/"2. v_lag_minutes"/]
+  S1 --> S2
+  S3["3. 010000_check_success_ss_esim_landing_to_discovery_workflow_status"]
+  S2 --> S3
+  S4["4. 020000_overwrite_ss_esim_checkpoint_temp"]
+  S3 --> S4
+  S5["5. 030000_running_ss_esim_landing_to_discovery_workflow_status"]
+  S4 --> S5
+  S6["6. 040000_overwrite_ss_esim_raw_temp"]
+  S5 --> S6
+  S7["7. 050100_append_ss_esim_valid"]
+  S6 --> S7
+  S8["8. 050200_append_ss_esim_reject"]
+  S7 --> S8
+  S9["9. 050300_append_ss_esim_temp"]
+  S8 --> S9
+  S10["10. 070000_overwrite_ss_esim_checkpoint"]
+  S9 --> S10
+  S11["11. 080000_cleanup_ss_esim_raw_temp"]
+  S10 --> S11
+  S12["12. 090000_success_ss_esim_landing_to_discovery_workflow_status"]
+  S11 --> S12
+  S13["13. 999999_export_data_to_mssql"]
+  S12 --> S13
+  OK([success])
+  S13 --> OK
+  FAIL([fail: package หยุด])
+  S1 -. error .-> FAIL
+  S2 -. error .-> FAIL
+  S3 -. error .-> FAIL
+  S4 -. error .-> FAIL
+  S5 -. error .-> FAIL
+  S6 -. error .-> FAIL
+  S7 -. error .-> FAIL
+  S8 -. error .-> FAIL
+  S9 -. error .-> FAIL
+  S10 -. error .-> FAIL
+  S11 -. error .-> FAIL
+  S12 -. error .-> FAIL
+  S13 -. error .-> FAIL

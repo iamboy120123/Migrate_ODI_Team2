@@ -1,0 +1,279 @@
+[
+  {
+    "task_id": "task_081c89ad18764c6ebe7fb2f7ed84d433_050200_append_ss_esim_reject",
+    "target_table": "DSSDEV.TB_TRANSACTION_SS_ESIM_REJECT",
+    "strategy_used": "append (smart->sinkOption.mode=Append)",
+    "dml_file": "output/dml/task_081c89ad18764c6ebe7fb2f7ed84d433_050200_append_ss_esim_reject.sql",
+    "procedure_name": "PRC_task_081c89ad18764c6ebe7fb2f7ed84d433_050200_append_ss_esim_reject",
+    "sink_mode": "append",
+    "merge_keys": [],
+    "columns": [
+      "PARTITION_DATE",
+      "CDR_ID",
+      "CDR_TYPE",
+      "PARTNER",
+      "OWNER",
+      "ICCID",
+      "FIRST_INSTALLED",
+      "PROFILE_TYPE",
+      "EID",
+      "SIM_TYPE",
+      "CDR_FILENAME",
+      "CHK_DUPLICATE",
+      "CDR_SOURCE_PATH",
+      "FILTER_DTM",
+      "CREATE_BY",
+      "PROCESS_DATE",
+      "STATUS",
+      "FILTER_ERROR",
+      "ERR_MSG",
+      "WORKFLOW_PROCESS_DATE"
+    ],
+    "steps": [
+      "STEP_1_INSERT"
+    ]
+  },
+  {
+    "task_id": "task_17e9202f814842e3b6d91fabe785f479_050300_append_ss_esim_temp",
+    "target_table": "DSSDEV.TB_TRANSACTION_SS_ESIM_TEMP",
+    "strategy_used": "append (smart->sinkOption.mode=Append, keyColumns=cdr_id ignored)",
+    "dml_file": "output/dml/task_17e9202f814842e3b6d91fabe785f479_050300_append_ss_esim_temp.sql",
+    "procedure_name": "PRC_task_17e9202f814842e3b6d91fabe785f479_050300_append_ss_esim_temp",
+    "sink_mode": "append",
+    "merge_keys": [
+      "cdr_id"
+    ],
+    "columns": [
+      "PARTITION_DATE",
+      "CDR_ID",
+      "CDR_TYPE",
+      "PARTNER",
+      "OWNER",
+      "ICCID",
+      "FIRST_INSTALLED",
+      "PROFILE_TYPE",
+      "EID",
+      "SIM_TYPE",
+      "CDR_FILENAME",
+      "CHK_DUPLICATE",
+      "CDR_SOURCE_PATH",
+      "FILTER_DTM",
+      "CREATE_BY",
+      "PROCESS_DATE",
+      "STATUS",
+      "B_NO",
+      "MAPPING_ERROR",
+      "ERR_MSG",
+      "WORKFLOW_PROCESS_DATE",
+      "FILE_DATE"
+    ],
+    "steps": [
+      "STEP_1_INSERT"
+    ]
+  },
+  {
+    "task_id": "task_1b899dbbbe54449d8218e58bed2a044f_030000_running_ss_esim_landing_to_discovery_workflow_status",
+    "target_table": "DSSDEV.TB_STAGING_SS_ESIM_LANDING_TO_DISCOVERY_WORKFLOW_STATUS",
+    "strategy_used": "overwrite (smart->sinkOption.mode=overwrite)",
+    "dml_file": "output/dml/task_1b899dbbbe54449d8218e58bed2a044f_030000_running_ss_esim_landing_to_discovery_workflow_status.sql",
+    "procedure_name": "PRC_task_1b899dbbbe54449d8218e58bed2a044f_030000_running_ss_esim_landing_to_discovery_workflow_status",
+    "sink_mode": "overwrite",
+    "merge_keys": [],
+    "columns": [
+      "RUNNING",
+      "WORKFLOW_PROCESS_DATE"
+    ],
+    "steps": [
+      "STEP_1_TRUNCATE",
+      "STEP_2_INSERT"
+    ]
+  },
+  {
+    "task_id": "task_6451c19231b14139ab3d99b35ac9c734_020000_overwrite_ss_esim_checkpoint_temp",
+    "target_table": "DSSDEV.TB_STAGING_SS_ESIM_CHECKPOINT_TEMP",
+    "strategy_used": "overwrite-by-partition (I14 delete_by_partition: PARTITION_DATE)",
+    "dml_file": "output/dml/task_6451c19231b14139ab3d99b35ac9c734_020000_overwrite_ss_esim_checkpoint_temp.sql",
+    "procedure_name": "PRC_task_6451c19231b14139ab3d99b35ac9c734_020000_overwrite_ss_esim_checkpoint_temp",
+    "sink_mode": "overwrite",
+    "merge_keys": [],
+    "columns": [
+      "PARTITION_DATE",
+      "CHECKPOINT_PARTITION",
+      "PROCESS_DATE"
+    ],
+    "steps": [
+      "STEP_1_DELETE",
+      "STEP_2_INSERT"
+    ]
+  },
+  {
+    "task_id": "task_6660be16ef9e43bfbcc8974256bb27f6_090000_success_ss_esim_landing_to_discovery_workflow_status",
+    "target_table": "DSSDEV.TB_STAGING_SS_ESIM_LANDING_TO_DISCOVERY_WORKFLOW_STATUS",
+    "strategy_used": "overwrite (smart->sinkOption.mode=overwrite)",
+    "dml_file": "output/dml/task_6660be16ef9e43bfbcc8974256bb27f6_090000_success_ss_esim_landing_to_discovery_workflow_status.sql",
+    "procedure_name": "PRC_task_6660be16ef9e43bfbcc8974256bb27f6_090000_success_ss_esim_landing_to_discovery_workflow_status",
+    "sink_mode": "overwrite",
+    "merge_keys": [],
+    "columns": [
+      "SUCCESS"
+    ],
+    "steps": [
+      "STEP_1_TRUNCATE",
+      "STEP_2_INSERT"
+    ]
+  },
+  {
+    "task_id": "task_8e949825ccb24a1eadf8c8d0f19bdf2b_070000_overwrite_ss_esim_checkpoint",
+    "target_table": "DSSDEV.TB_STAGING_SS_ESIM_CHECKPOINT",
+    "strategy_used": "overwrite-by-partition (I14 delete_by_partition: PARTITION_DATE)",
+    "dml_file": "output/dml/task_8e949825ccb24a1eadf8c8d0f19bdf2b_070000_overwrite_ss_esim_checkpoint.sql",
+    "procedure_name": "PRC_task_8e949825ccb24a1eadf8c8d0f19bdf2b_070000_overwrite_ss_esim_checkpoint",
+    "sink_mode": "overwrite",
+    "merge_keys": [],
+    "columns": [
+      "PARTITION_DATE",
+      "CHECKPOINT_PARTITION",
+      "PROCESS_DATE"
+    ],
+    "steps": [
+      "STEP_1_DELETE",
+      "STEP_2_INSERT"
+    ]
+  },
+  {
+    "task_id": "task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp",
+    "target_table": "DSSDEV.TB_STAGING_SS_ESIM_RAW_TEMP",
+    "strategy_used": "overwrite-by-partition (I14 delete_by_partition: PARTITION_DATE)",
+    "dml_file": "output/dml/task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp.sql",
+    "procedure_name": "PRC_task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp",
+    "sink_mode": "overwrite",
+    "merge_keys": [],
+    "columns": [
+      "PARTITION_DATE",
+      "CDR_ID",
+      "CDR_TYPE",
+      "PARTNER",
+      "OWNER",
+      "ICCID",
+      "FIRST_INSTALLED",
+      "PROFILE_TYPE",
+      "EID",
+      "SIM_TYPE",
+      "CP_ID",
+      "SERVICE_ID",
+      "PRICE_RATE_TYPE",
+      "NETWORK_TYPE",
+      "INVOICING_CO_ID",
+      "SHARE_BASIS",
+      "CDR_FILENAME",
+      "CHK_DUPLICATE",
+      "SOURCE_PATH",
+      "FILTER_ERROR",
+      "FILTER_ERROR_MSG",
+      "TYPE_ERROR",
+      "TYPE_ERROR_MSG",
+      "MAPPING_ERROR",
+      "MAPPING_ERROR_MSG",
+      "STATUS",
+      "FILTER_DTM",
+      "B_NO",
+      "CREATE_BY",
+      "PROCESS_DATE",
+      "WORKFLOW_PROCESS_DATE",
+      "FILE_DATE"
+    ],
+    "steps": [
+      "STEP_1_DELETE",
+      "STEP_2_INSERT"
+    ]
+  },
+  {
+    "task_id": "task_cc72e06e0d2b4dc29d37f72e1c729d1d_010000_check_success_ss_esim_landing_to_discovery_workflow_status",
+    "target_table": "DSSDEV.TB_STAGING_SS_ESIM_LANDING_TO_DISCOVERY_WORKFLOW_STATUS_TEMP",
+    "strategy_used": "overwrite (smart->sinkOption.mode=overwrite)",
+    "dml_file": "output/dml/task_cc72e06e0d2b4dc29d37f72e1c729d1d_010000_check_success_ss_esim_landing_to_discovery_workflow_status.sql",
+    "procedure_name": "PRC_task_cc72e06e0d2b4dc29d37f72e1c729d1d_010000_check_success_ss_esim_landing_to_discovery_workflow_status",
+    "sink_mode": "overwrite",
+    "merge_keys": [],
+    "columns": [
+      "SUCCESS"
+    ],
+    "steps": [
+      "STEP_1_TRUNCATE",
+      "STEP_2_INSERT"
+    ]
+  },
+  {
+    "task_id": "task_d60b3f0310094ab3bdbbad1eca43e81e_050100_append_ss_esim_valid",
+    "target_table": "DSSDEV.TB_TRANSACTION_SS_ESIM_VALID",
+    "strategy_used": "append (smart->sinkOption.mode=Append)",
+    "dml_file": "output/dml/task_d60b3f0310094ab3bdbbad1eca43e81e_050100_append_ss_esim_valid.sql",
+    "procedure_name": "PRC_task_d60b3f0310094ab3bdbbad1eca43e81e_050100_append_ss_esim_valid",
+    "sink_mode": "append",
+    "merge_keys": [],
+    "columns": [
+      "PARTITION_DATE",
+      "CDR_ID",
+      "CDR_TYPE",
+      "PARTNER",
+      "OWNER",
+      "ICCID",
+      "FIRST_INSTALLED",
+      "PROFILE_TYPE",
+      "EID",
+      "SIM_TYPE",
+      "CP_ID",
+      "SERVICE_ID",
+      "BEFORE_SHARING",
+      "PRICE_RATE_TYPE",
+      "NETWORK_TYPE",
+      "INVOICING_CO_ID",
+      "SHARE_BASIS",
+      "CDR_FILENAME",
+      "CHK_DUPLICATE",
+      "FILTER_DTM",
+      "CREATE_BY",
+      "REMAP_DTM",
+      "REMAP_BY",
+      "PROCESS_DATE",
+      "TRANSACTION_UNITS",
+      "STATUS",
+      "WORKFLOW_PROCESS_DATE",
+      "FILE_DATE"
+    ],
+    "steps": [
+      "STEP_1_INSERT"
+    ]
+  },
+  {
+    "task_id": "task_0a7791409dbc4c789e892d888f5e1a51_080000_cleanup_ss_esim_raw_temp",
+    "target_table": "DSSDEV.TB_STAGING_SS_ESIM_RAW_TEMP",
+    "strategy_used": "cleanup DELETE ทั้งตาราง (Q10 = A)",
+    "dml_file": "output/dml/task_0a7791409dbc4c789e892d888f5e1a51_080000_cleanup_ss_esim_raw_temp.sql",
+    "procedure_name": "PRC_task_0a7791409dbc4c789e892d888f5e1a51_080000_cleanup_ss_esim_raw_temp",
+    "sink_mode": "cleanup",
+    "merge_keys": [],
+    "columns": [],
+    "steps": [
+      "STEP_1_DELETE"
+    ],
+    "manual": true
+  },
+  {
+    "task_id": "task_44a662474c7f4ce2b1d603c3391c002d_999999_export_data_to_mssql",
+    "target_table": "",
+    "strategy_used": "placeholder no-op (Q9 = A, GAP-02)",
+    "dml_file": "output/dml/task_44a662474c7f4ce2b1d603c3391c002d_999999_export_data_to_mssql.sql",
+    "procedure_name": "PRC_task_44a662474c7f4ce2b1d603c3391c002d_999999_export_data_to_mssql",
+    "sink_mode": "placeholder",
+    "merge_keys": [],
+    "columns": [],
+    "steps": [
+      "STEP_1_PLACEHOLDER"
+    ],
+    "manual": true,
+    "readonly": true,
+    "seq": 85000,
+    "seq_reason": "K15: DAG 090000 ขึ้นกับ 080000 + 999999 → รันหลัง 080000 ก่อน 090000"
+  }
+]

@@ -173,6 +173,9 @@ def reuse_guids(out_xml, zip_path, xml_name, new_guid):
 def seq_key(e):
     tid = e["task_id"]
     name = tid.split("_", 2)[2] if tid.startswith("task_") and tid.count("_") >= 2 else tid
+    # K15: "seq" ใน dml manifest แทนเลขหน้าชื่อ task เมื่อเลขไม่ตรงกับ DAG (เช่น 999999 ต้องรันก่อน 090000)
+    if isinstance(e.get("seq"), int):
+        return (0, e["seq"]), name
     head = name.split("_", 1)[0]
     return (0, int(head)) if head.isdigit() else (1, 0), name
 
@@ -245,7 +248,14 @@ def main():
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
             if len(cells) >= 4 and cells[-1].upper() == "PENDING":
                 open_flags.append((cells[0], cells[1]))
-        if open_flags:
+        # K14: waiver ของ G2 ที่ SA อนุมัติและยัง open ครอบ "REVIEW_FLAGS PENDING" -> เตือนแทน error (ตรงกับ check_gate K11)
+        gates_md = Path("status/GATES.md")
+        waived = [l.split("|")[1].strip() for l in (gates_md.read_text(encoding="utf-8") if gates_md.exists() else "").splitlines()
+                  if re.match(r"^\|\s*W\d+\s*\|\s*G2\s*\|\s*REVIEW_FLAGS PENDING", l, re.I) and "| open |" in l]
+        if open_flags and waived:
+            print(f"[WARN] ยังมี {len(open_flags)} จุดใน {flags_md} ที่เป็น PENDING -- อยู่ใต้ waiver {', '.join(waived)} "
+                  "(status/GATES.md) จึงสร้าง package ต่อ · ต้องปิดตามเงื่อนไขของ waiver", file=sys.stderr)
+        elif open_flags:
             by_reason = {}
             for _t, reason in open_flags:
                 by_reason[reason] = by_reason.get(reason, 0) + 1

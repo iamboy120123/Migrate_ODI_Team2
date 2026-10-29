@@ -78,5 +78,6 @@
     "landing_table": "tb_landing_ss_esim",
     "landing_column_map": {},
     "note": "landing_column_map = คอลัมน์ landing -> คอลัมน์ target ที่รับค่าตรง (เติมหลัง Phase 4)"
-  }
+  },
+  "concat_policy": "plain_concat"
 }

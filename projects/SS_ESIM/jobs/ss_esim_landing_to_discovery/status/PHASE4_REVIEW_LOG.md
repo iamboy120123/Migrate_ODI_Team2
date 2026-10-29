@@ -42,6 +42,17 @@ Updated: 2026-10-29 · บันทึกผล Phase 4 (`/review-sql` → `sql-
 | task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp | nullif(x,'') ถูกถอด | Oracle '' = NULL อยู่แล้ว | - | ไม่ | PASS | - | NO_CHANGE |
 | task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp | coalesce(iccid,'') → LEFT JOIN dup | Oracle ได้ NULL join ไม่ติด · แถว iccid NULL = MAN ก่อนเช็ก DUP · rn=-99 | - | ไม่ (ในทางปฏิบัติ) | PASS | - | NO_CHANGE |
 | task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp | TO_TIMESTAMP + REGEXP_LIKE 14 หลัก | LEGACY timeParserPolicy อาจ lenient (เดือน 13) · CORRECTED = NULL ตรงกับ Oracle | - | รอ Q3 | ขึ้นกับ Q3/Q5 (ไม่ใช่ DIFF ใหม่) | Q3 | OPEN |
+| task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp | check_sql WARN D-R5: UNION datatype check ข้าม (branch ไม่ใช่ single-table) | ตรวจมือ: `chk_duplicate` ของ `TB_TRANSACTION_SS_ESIM_VALID` และ `TB_TRANSACTION_SS_ESIM_TEMP` = VARCHAR2(255) ทั้งคู่ (`input/oracle_ddl/_shared_all_tab_columns.csv`) | - | ไม่ | - | - | NO_CHANGE |
+| task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp | ความเร็ว: CROSS JOIN (review_report) | As-Is: ต่อกับ subquery 1 แถว (workflow_process_date / COUNT(*)) ตาม raw SQL | - | ไม่ | - | SA ยืนยันในแชต 2026-10-29 | NO_CHANGE |
+| task_d60b3f0310094ab3bdbbad1eca43e81e_050100_append_ss_esim_valid | ความเร็ว: CROSS JOIN (review_report) | As-Is: ต่อกับ subquery 1 แถว (workflow_process_date / COUNT(*)) ตาม raw SQL | - | ไม่ | - | SA ยืนยันในแชต 2026-10-29 | NO_CHANGE |
+| task_081c89ad18764c6ebe7fb2f7ed84d433_050200_append_ss_esim_reject | ความเร็ว: CROSS JOIN (review_report) | As-Is: ต่อกับ subquery 1 แถว (workflow_process_date / COUNT(*)) ตาม raw SQL | - | ไม่ | - | SA ยืนยันในแชต 2026-10-29 | NO_CHANGE |
+| task_17e9202f814842e3b6d91fabe785f479_050300_append_ss_esim_temp | ความเร็ว: CROSS JOIN (review_report) | As-Is: ต่อกับ subquery 1 แถว (workflow_process_date / COUNT(*)) ตาม raw SQL | - | ไม่ | - | SA ยืนยันในแชต 2026-10-29 | NO_CHANGE |
+| task_6451c19231b14139ab3d99b35ac9c734_020000_overwrite_ss_esim_checkpoint_temp | ความเร็ว: DISTINCT (review_report) | As-Is: ตัดค่าซ้ำตาม raw SQL — ตัดออก = ผลเปลี่ยน | - | ไม่ | - | SA ยืนยันในแชต 2026-10-29 | NO_CHANGE |
+| task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp | ความเร็ว: DISTINCT (review_report) | As-Is: ตัดค่าซ้ำตาม raw SQL — ตัดออก = ผลเปลี่ยน | - | ไม่ | - | SA ยืนยันในแชต 2026-10-29 | NO_CHANGE |
+| task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp | ความเร็ว: UNION แทน UNION ALL (review_report) | As-Is: UNION ตัดซ้ำ chk_duplicate ตาม raw SQL — เปลี่ยน = ผลเปลี่ยน | - | ไม่ | - | SA ยืนยันในแชต 2026-10-29 | NO_CHANGE |
+| task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp | check_sql WARN item 43: `TO_CHAR(1)` ไม่มี format mask | จำนวนเต็มบวก ไม่มีทศนิยม/ตัวคั่น → NLS ไม่เปลี่ยนผล | - | ไม่ | - | SA ยืนยันในแชต 2026-10-29 | NO_CHANGE |
+| task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp | check_sql WARN item 43: `TO_CHAR(ROW_NUMBER() over(ORDER BY NULL))` ไม่มี format mask | จำนวนเต็มบวก → NLS ไม่เปลี่ยนผล | - | ไม่ | - | SA ยืนยันในแชต 2026-10-29 | NO_CHANGE |
+| task_6451c19231b14139ab3d99b35ac9c734_020000_overwrite_ss_esim_checkpoint_temp | check_sql WARN item 43: `TO_NUMBER(TO_CHAR(SYSDATE-INTERVAL '5' MINUTE, 'YYYYMMDDHH24MI'))` | TO_CHAR มี mask แล้ว · TO_NUMBER รับตัวเลข 12 หลักล้วน → NLS ไม่เปลี่ยนผล | - | ไม่ | - | SA ยืนยันในแชต 2026-10-29 | NO_CHANGE |
 
 ## ประวัติ
 
