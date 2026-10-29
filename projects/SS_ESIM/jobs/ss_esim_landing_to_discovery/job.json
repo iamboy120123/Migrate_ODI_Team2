@@ -13,7 +13,7 @@
   "id_base": 92000,
   "files_answered": true,
   "extras": true,
-  "landing": "1 tb_landing_ss_esim",
+  "landing": "tb_landing_ss_esim",
   "replaces_pending": [],
   "target_tables_ready": true,
   "tables": [

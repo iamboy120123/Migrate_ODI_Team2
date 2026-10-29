@@ -10,6 +10,6 @@
 | logical schema / context | DSS_ODI_LOG / DEV | | | |
 | DB timezone (`DBTIMEZONE`, `SYSTIMESTAMP`) | | | | |
 | NLS (`NLS_DATE_FORMAT`, `NLS_TIMESTAMP_FORMAT`) | | | | |
-| ชนิดคอลัมน์ landing `1 tb_landing_ss_esim` (`all_tab_columns`) | | | | |
+| ชนิดคอลัมน์ landing `tb_landing_ss_esim` (`all_tab_columns`) | | | | |
 | Spark version / ansi / timeParserPolicy / escapedStringLiterals (Blendata) | | | | |
 | Airflow schedule + timezone ของ DAG | | | | |

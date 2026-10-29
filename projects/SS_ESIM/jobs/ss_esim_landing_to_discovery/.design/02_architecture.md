@@ -6,7 +6,7 @@ Workflow: `ss_esim_landing_to_discovery` · Updated: 2026-10-29
 
 ```mermaid
 flowchart LR
-  SRC[Source / ingestion] --> LND[(1 tb_landing_ss_esim)]
+  SRC[Source / ingestion] --> LND[(tb_landing_ss_esim)]
   LND --> BLD[Blendata workflow<br/>ss_esim_landing_to_discovery<br/>Spark SQL tasks]
   BLD --> TGT[(Target tables)]
   BLD --> ST[(workflow status / checkpoint)]
@@ -16,14 +16,14 @@ flowchart LR
 |---|---|---|
 | Scheduler | _(เติม — cron จาก manifest: ดู 04_task_mapping)_ | |
 | Engine | Spark SQL (Blendata) | |
-| Landing | `1 tb_landing_ss_esim` | retention: _(Q ใน OPEN_DECISIONS)_ |
+| Landing | `tb_landing_ss_esim` | retention: _(Q ใน OPEN_DECISIONS)_ |
 | Downstream consumer | _(เติม)_ | |
 
 ## 2. To-Be (ODI 14.1.2 / Oracle 19c)
 
 ```mermaid
 flowchart LR
-  SRC[Source / ingestion] --> LND[(DSSDEV.1 tb_landing_ss_esim)]
+  SRC[Source / ingestion] --> LND[(DSSDEV.tb_landing_ss_esim)]
   subgraph ODI[ODI — SS_ESIM_L2D]
     VAR[Variables<br/>v_max_partition / v_lag_minutes] --> PKG[Package PKG_SS_ESIM_L2D]
     PKG --> PRC[Procedures<br/>1 task = 1 procedure]

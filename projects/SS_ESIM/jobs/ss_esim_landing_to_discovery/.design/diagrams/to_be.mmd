@@ -1,5 +1,5 @@
 flowchart LR
-  SRC[Source / ingestion] --> LND[(DSSDEV.1 tb_landing_ss_esim)]
+  SRC[Source / ingestion] --> LND[(DSSDEV.tb_landing_ss_esim)]
   LND --> VAR[ODI variables]
   VAR --> PKG[PKG_SS_ESIM_L2D]
   PKG --> TGT[(DSSDEV targets)]

@@ -8,6 +8,7 @@
   "error_handling": "fail-fast",
   "load_strategy": "smart",
   "target_table_prefix": "dssdev.",
+  "schema_mode": "odiref",
   "paths": {
     "input_export_workflow": "input/blendata/export_workflow.json",
     "output_raw_sql": "output/sql/raw",
@@ -40,7 +41,7 @@
         "var_type": "P",
         "store": "L",
         "logical_schema": "DSS_ODI_LOG",
-        "refresh_query": "SELECT NVL(MAX(partition_minute), 0) FROM 1 tb_landing_ss_esim",
+        "refresh_query": "SELECT NVL(MAX(partition_minute), 0) FROM <%=odiRef.getSchemaName(\"DSS_ODI_LOG\",\"D\")%>.tb_landing_ss_esim",
         "replaces_tasks": [
           "000000"
         ],
@@ -52,11 +53,11 @@
         "var_type": "P",
         "store": "L",
         "logical_schema": "DSS_ODI_LOG",
-        "refresh_query": "SELECT NVL(ROUND((SYSDATE - TO_DATE(TO_CHAR(MAX(partition_minute)), 'YYYYMMDDHH24MI')) * 1440), 999999) FROM 1 tb_landing_ss_esim",
+        "refresh_query": "SELECT NVL(ROUND((SYSDATE - TO_DATE(TO_CHAR(MAX(partition_minute)), 'YYYYMMDDHH24MI')) * 1440), 999999) FROM <%=odiRef.getSchemaName(\"DSS_ODI_LOG\",\"D\")%>.tb_landing_ss_esim",
         "note": "lag (นาที) ของ landing ล่าสุด; 999999 = landing ว่าง — Evaluate step (<= 120) รอ sample จาก Studio"
       }
     ],
-    "work_repo_schema": null
+    "work_repo_schema": "DSSDEV"
   },
   "ai_review": {
     "model": "claude-sonnet-4-5",
@@ -74,7 +75,7 @@
   "profile": {
     "result_csv": "input/run_results/profile_result.csv",
     "length_margin_pct": 50,
-    "landing_table": "1 tb_landing_ss_esim",
+    "landing_table": "tb_landing_ss_esim",
     "landing_column_map": {},
     "note": "landing_column_map = คอลัมน์ landing -> คอลัมน์ target ที่รับค่าตรง (เติมหลัง Phase 4)"
   }
