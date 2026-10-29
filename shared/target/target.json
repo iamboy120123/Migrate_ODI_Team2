@@ -1,0 +1,31 @@
+{
+  "generated_by": "workspace.py (update-target / init) — ห้ามแก้มือ",
+  "updated_at": "2026-10-29T16:23:56+07:00",
+  "odi": {
+    "logical_schema": "DSS_ODI_LOG",
+    "context_code": "DEV",
+    "work_user": "dssdev",
+    "schema_name": "DSSDEV",
+    "target_prefix": "dssdev.",
+    "repository_version": "05.02.02.20",
+    "odi_version": "14.1.2"
+  },
+  "files": {
+    "smart_export": {
+      "path": "shared/target/smart_export/smart_export_DEV_20261028.xml",
+      "sha256": "2279a661ab4fad2d1b6b17043950cdc6b97c90619f46b6b87bed35ce6174b5f2"
+    },
+    "columns": {
+      "path": "shared/target/columns/all_tab_columns.csv",
+      "sha256": "3e911f30af004c1c9a0b385e93981d5265344ae1ac1363b542ad65a59613720d"
+    }
+  },
+  "db_policy": {
+    "ai_access": "ai",
+    "select_mode": "ask",
+    "users": "split",
+    "read_odi_log": false,
+    "default_env": "DEV"
+  },
+  "connections": "shared/db.local.json (ในเครื่อง · ไม่ขึ้น Git)"
+}
