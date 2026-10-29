@@ -1,0 +1,1 @@
+-- error_handling = 'fail-fast' (ไม่ใช่ errlog) จึงไม่ต้องสร้าง error log table

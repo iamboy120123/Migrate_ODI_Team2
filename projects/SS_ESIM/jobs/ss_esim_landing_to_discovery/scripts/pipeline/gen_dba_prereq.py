@@ -37,7 +37,8 @@ def err_table_for(target_table: str) -> str:
     return f"ERR_{target_table}".upper()
 
 
-TRUNCATE_RE = re.compile(r"EXECUTE\s+IMMEDIATE\s+'TRUNCATE\s+TABLE", re.I)
+# K17: นับทั้ง TRUNCATE ตรง ๆ (step ของ ODI) และใน EXECUTE IMMEDIATE -- เดิมนับแค่แบบหลัง จึงรายงาน 0
+TRUNCATE_RE = re.compile(r"\bTRUNCATE\s+TABLE\b", re.I)
 SRC_REF_RE = re.compile(r"\b(?:FROM|JOIN)\s+([A-Za-z_][A-Za-z0-9_$#]*(?:\.[A-Za-z_][A-Za-z0-9_$#]*)?)", re.I)
 CTE_RE = re.compile(r"(?:\bWITH|,)\s*([A-Za-z_][A-Za-z0-9_]*)\s+AS\s*\(", re.I)
 
@@ -99,6 +100,8 @@ def collect_source_refs(sql_dir: Path, config: dict = None) -> dict:
         return refs
     for f in in_scope_sql(sql_dir, config or {}):
         sql = strip_sql_comments(f.read_text(encoding="utf-8"))
+        # K17: schema_mode=odiref -- <%=odiRef.getSchemaName(...)%>.table ไม่เข้า SRC_REF_RE จึงไม่พบ external object เลย
+        sql = re.sub(r"<%=\s*odiRef\.getSchemaName\([^%]*\)\s*%>", "ODISCHEMA", sql)
         ctes = {c.upper() for c in CTE_RE.findall(sql)}
         m = re.search(r"_(\d{6})_", f.stem)
         tag = m.group(1) if m else f.stem
@@ -365,7 +368,7 @@ WHERE  privilege = 'DROP ANY TABLE';
            "  ของตาราง หรือมี `DROP ANY TABLE` ถ้าให้ไม่ได้ ต้องเปลี่ยนเป็น `DELETE` (ช้ากว่าและกิน UNDO)",
            "- **data type ของคอลัมน์ boolean** (`success`, `running`): converted SQL ส่งค่า string `'TRUE'`",
            "  DDL เป็น `VARCHAR2(5)` (D2-revised — ดู status/PHASE4_REVIEW_LOG.md)",
-           "- **`cdr_id` ต้องเป็น VARCHAR2** (ใช้เป็น merge key ของ 050300)",
+           "- **`cdr_id` ต้องเป็น VARCHAR2** (050300 append มี keyColumns=cdr_id ใน Blendata แต่ไม่ได้ใช้เป็น merge key)",
            "- **`effective_date` / `expired_date` ต้องเป็น DATE/TIMESTAMP** (converted SQL ใช้ `TRUNC()`)",
            "- **partition**: source เป็น Spark partitioned by `partition_date` — ถ้า target ทำ partition ด้วย",
            "  ให้พิจารณา `TRUNCATE PARTITION` แทน `TRUNCATE TABLE`",

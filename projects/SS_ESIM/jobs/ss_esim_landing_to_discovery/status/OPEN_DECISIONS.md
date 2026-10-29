@@ -120,3 +120,15 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] B) ค่าคงที่เท่ากับ user ของ Blendata เดิม (ต้องหาค่าจริงก่อน)
 
 > **Q13 = A (`USER` = login ของ ODI)** ✅ SA 2026-10-29 (ตอบในแชต) · ผล: Phase 7 ไม่เทียบคอลัมน์ `create_by` (known diff) · ไม่ต้องแก้ converted SQL
+
+### Q14. ความยาวคอลัมน์ปลายทางสั้นกว่าต้นทาง (ก่อน G6)
+ข้อเท็จจริง (ddl-dba-reviewer, `/gen-ddl` 2026-10-29 · ชนิดจาก `input/oracle_ddl/_shared_all_tab_columns.csv`): ค่าที่ยาวเกิน = `ORA-12899` step ล้ม (fail-fast)
+- `RAW_TEMP.CDR_FILENAME` VARCHAR2(255) ← `INPUT_SOURCE_NAME` VARCHAR2(500)
+- `CP_ID`, `PRICE_RATE_TYPE`, `NETWORK_TYPE`, `INVOICING_CO_ID`, `SHARE_BASIS` (RAW_TEMP / VALID) VARCHAR2(20) ← view mapping VARCHAR2(100)
+- `B_NO` (RAW_TEMP / TEMP) VARCHAR2(50) ← `partner || '_ESIM_' || sim_type` สูงสุด 76
+- `RAW_TEMP.TYPE_ERROR` VARCHAR2(100) ← สูงสุดประมาณ 147 (วันที่มีช่องว่าง)
+- ค่าสูงสุดที่พบจริงบน Prod / Blendata: ____ (DBA / ทีม Blendata)
+- [ ] A) คงความยาวเดิม — ยืนยันแล้วว่าค่าจริงไม่เกิน **[แนะนำ ถ้าค่าจริงไม่เกิน]**
+- [ ] B) DBA ขยายคอลัมน์ให้เท่าต้นทาง (ทุก env)
+
+> 2026-10-29: SA ให้เปิด Q14 ไว้ — รอบทดสอบ Dev ใช้ตารางเดิมไปก่อน · ต้องปิดก่อน G6 (ยังเปิด)

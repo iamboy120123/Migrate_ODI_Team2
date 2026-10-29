@@ -238,7 +238,9 @@ def load_existing_columns():
     """K16: {(TABLE, COL): oracle_type} จาก input/run_results/*/*.csv ที่มีหัว all_tab_columns"""
     out = {}
     need = {"TABLE_NAME", "COLUMN_NAME", "DATA_TYPE", "DATA_LENGTH"}
-    for f in sorted(Path("input/run_results").glob("*/*.csv")):
+    # K17: input/oracle_ddl/*.csv (all_tab_columns ที่ใช้ตอน preflight / check_sql) ก็เป็นชนิดจริงจาก Oracle -- เดิมไม่อ่าน จึงตกเป็น fallback
+    files = sorted(Path("input/oracle_ddl").glob("*.csv")) + sorted(Path("input/run_results").glob("*/*.csv"))
+    for f in files:
         try:
             with f.open(encoding="utf-8-sig", newline="") as fh:
                 rd = csv.DictReader(fh)
@@ -320,7 +322,8 @@ def main():
                 entry["cols"].append(c)
         for k, v in expr_by_col.items():
             entry["expr"].setdefault(k, v)
-        if e.get("merge_keys"):
+        # K17: merge key ใช้เฉพาะ MERGE -- append ที่ manifest บอก "keyColumns ignored" ห้ามได้ unique index (ORA-00001 ทั้งที่ Spark ไม่บังคับ)
+        if e.get("merge_keys") and "merge" in (e.get("strategy_used") or "").lower():
             entry["merge_keys"] = e.get("merge_keys")
 
     # ตารางที่ถูก TRUNCATE ทุก run เล็กเสมอ -> ไม่ต้องมี lookup index
