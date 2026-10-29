@@ -107,3 +107,9 @@
 
 | # | บทเรียน | ผลถ้าพลาด | ทำอย่างไร |
 |---|---|---|---|
+
+## 2. บทเรียนของงานนี้ (/lesson)
+
+| # | หมวด / ขั้น | ปัญหาที่เจอ | ผลถ้าพลาด | วิธีทำ | หลักฐาน | วันที่ / โดย |
+|---|---|---|---|---|---|---|
+| L39 | 03 · preflight | `status/PREFLIGHT_CHECKLIST.md`: ตัวตรวจ (`check_gate.py G0` → `preflight()` ใน `verify_all.py`) นับเฉพาะช่อง **Status** (คอลัมน์ที่ 2) · การใส่ `✅ SA <วันที่>` ในช่อง Note / Checked by ไม่นับ | STATUS เขียนว่า "5/5 → G0 พร้อม" แต่ gate จริง BLOCKED · ไปต่อ Phase 1 ทั้งที่ gate ไม่ผ่าน หรือเสียรอบไล่หาสาเหตุ | เมื่อ SA ยืนยันข้อ preflight ในแชต ให้เปลี่ยนช่อง Status เป็น ✅ พร้อมกับใส่ `✅ SA <วันที่>` · รัน `python scripts/checks/check_gate.py G0` ก่อนเขียน "5/5" / "G0 พร้อม" ใน `status/MIGRATION_STATUS.md` · generic (ทุกงาน) | commit `25e1c43` แถว 2: Checked by = `✅ SA 2026-10-29` แต่ Status = ⬜ · `MIGRATION_STATUS.md` rev.3 = "Pre-flight 5/5" · `check_gate.py G0` = `BLOCKED PREFLIGHT 4/5` → แก้ช่อง Status → `PASS PREFLIGHT 5/5` (rev.4) | 2026-10-29 · agent (SA ยืนยันข้อ 2 ในแชต) |

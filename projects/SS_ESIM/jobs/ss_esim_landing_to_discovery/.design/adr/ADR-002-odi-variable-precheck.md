@@ -1,6 +1,6 @@
 # ADR-002: ใช้ ODI Variable (Refresh Query) แทน task precheck
 
-- Status: Proposed
+- Status: Accepted ✅ SA 2026-10-29 (ตอบในแชต · ตาม Q2 = A)
 - Date: 2026-10-29
 - Deciders: 41642975+iamboy120123@users.noreply.github.com
 

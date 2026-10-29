@@ -1,6 +1,6 @@
 # Migration Status — ss_esim_landing_to_discovery (Blendata → ODI)
 
-Updated: 2026-10-29 (rev.3) | SA: 41642975+iamboy120123@users.noreply.github.com
+Updated: 2026-10-29 (rev.4) | SA: 41642975+iamboy120123@users.noreply.github.com
 
 > สร้างโดย `setup_migrate.ps1` — Claude Code อัปเดตไฟล์นี้ด้วย `/update-status` ทุกครั้งที่จบ step
 
@@ -21,7 +21,7 @@ Updated: 2026-10-29 (rev.3) | SA: 41642975+iamboy120123@users.noreply.github.com
 
 | Phase | งาน | สถานะ |
 |---|---|---|
-| 0 | Setup / config (`setup_migrate.ps1`) + pre-flight | ✅ setup 2026-10-29 · ✅ pre-flight 5/5 (2026-10-29) → G0 (ยืนยันด้วย `/gate G0`) |
+| 0 | Setup / config (`setup_migrate.ps1`) + pre-flight | ✅ setup 2026-10-29 · ✅ pre-flight 5/5 (2026-10-29) → ✅ G0 PASS 2026-10-29 (`check_gate.py G0`) |
 | 1 | Intake I1–I17 | 🔄 2026-10-29 — ปิดแล้ว I4, I12, I15 · ค้าง I10/I13 (หลัง convert / gen-export) · I14 รอ Q3 (`partitionOverwriteMode`) · I16 ยืนยัน project ซ้ำใน Studio |
 | 1-3 | Extract + Convert | ⏳ |
 | 4 | SQL Review | ⏳ |
@@ -34,13 +34,13 @@ Updated: 2026-10-29 (rev.3) | SA: 41642975+iamboy120123@users.noreply.github.com
 
 _(เติมหลัง Phase 5)_
 
-## 4. การตัดสินใจที่ปิดแล้ว (2026-10-29 · รายละเอียด `status/OPEN_DECISIONS.md`)
+## 4. การตัดสินใจ (SA ตอบแล้ว 2026-10-29 · Q1, Q3–Q6 ยังมีค่าค้าง — V4 ยังนับว่าเปิด · รายละเอียด `status/OPEN_DECISIONS.md`)
 
 | Q | เรื่อง | คำตอบ |
 |---|---|---|
-| Q1 | Landing retention | B ยังไม่ทราบ — ถามทีม ingestion (ก่อน G7) |
+| Q1 | Landing retention | B ยังไม่ทราบ — ถามทีม ingestion (ก่อน G7) (เปิด) |
 | Q2 | Fail-fast เมื่อ lag > 120 นาที | A ต้องการ |
-| Q3 | Spark config Blendata | B ยังขอไม่ได้ (ต้องได้ก่อน G2) |
+| Q3 | Spark config Blendata | B ยังขอไม่ได้ (ต้องได้ก่อน G2) (เปิด) |
 | Q4 | Data contract landing | A ตาม `all_tab_columns` + DESCRIBE จาก Blendata |
 | Q5 | Schedule | A Scenario + Agent + กันรอบซ้อน |
 | Q6 | แจ้งเตือน | A OdiSendMail KO path (ค่า SMTP / ผู้รับ = placeholder, ก่อน G4) |
@@ -54,11 +54,15 @@ _(เติมหลัง Phase 5)_
 ## 5. ยังค้าง
 
 - [x] Pre-flight 2 / 3 / 5 (Topology · DDL · สิทธิ์ Smart Import) → 5/5 ✅ SA 2026-10-29
-- [ ] รัน `python scripts/checks/check_gate.py G0` ยืนยัน → Phase 1–3 (`/convert`)
+- [x] รัน `python scripts/checks/check_gate.py G0` ยืนยัน → ✅ G0 PASS 2026-10-29
+- [ ] Phase 1–3 `/convert`
 - [ ] Q3 ค่า Spark config จริง → ปลด I14 (DELETE เฉพาะ partition / ล้างทั้งตาราง) ของ 020000, 040000, 070000 · ก่อน G2
 - [ ] `DESCRIBE tb_landing_ss_esim` จาก Blendata + รูปแบบข้อความของ `FIRST_INSTALLED` (Q4) · ก่อน `/review-sql`
 - [ ] sample Evaluate Variable step จาก ODI Studio (Q2) · ก่อน `/gen-export`
 - [ ] ค่า SMTP / ผู้รับ mail (Q6) · ก่อน G4
+- [ ] timezone ของ DAG / Blendata (`session.timeZone`) เทียบ `DBTIMEZONE` / `SESSIONTIMEZONE` ของ Oracle (Q5 / Q3)
+- [ ] ผู้เติม landing ใน Prod (Q4) · ก่อน G6.M3
+- [x] ADR-002 (variable precheck) → Accepted ✅ SA 2026-10-29 (Q2)
 - [ ] DBA grant SELECT `DSSDEV.SNP_*` ให้ user read-only แทน `SYSTEM` (Q7)
 - [ ] ยืนยันความหมาย `olderThan: -1` (Q10) · วิธี export SQL Server จริง (Q9) · schema work repo Prod (Q7) · ก่อน G6
 - [ ] Landing retention (Q1) · ก่อน G7
@@ -83,3 +87,4 @@ _(เติมหลัง Phase 5)_
 | 1 | 2026-10-29 | setup |
 | 2 | 2026-10-29 | แก้ชื่อ landing · Intake รอบแรก ปิด Q1–Q12 (บางข้อมีค้าง) · GAP-01–04 · config `schema_mode=odiref`, `work_repo_schema=DSSDEV`, refresh_query ใส่ odiRef · หมายเหตุ: ทำจาก Cowork (shell บนเครื่องรันไม่ได้) — ยังไม่ได้รัน `wiki.py` / `check_inputs.py` / `job_status.py` |
 | 3 | 2026-10-29 | Pre-flight 5/5 (ข้อ 2, 3, 5 ✅ SA) → G0 พร้อม |
+| 4 | 2026-10-29 | `/gate G0` → ✅ PASS (PREFLIGHT 5/5) — แก้ช่อง Status ข้อ 2 ใน `PREFLIGHT_CHECKLIST.md` เป็น ✅ ตามที่ SA ยืนยันในแชต (rev.3 ลงแค่ Note/Checked by) · state-auditor: §4 ระบุ Q ที่ยังค้าง, §5 เพิ่ม Q4/Q5/ADR-002 · `INTAKE.md` I16 work repo schema = `DSSDEV` (Q7) · ADR-002 Accepted ✅ SA 2026-10-29 · บทเรียน L39 (ช่อง Status ของ preflight) ใน `knowledge/lessons-learned.md` → พร้อม Phase 1–3 (`/convert`) |

@@ -23,5 +23,5 @@ Updated: 2026-10-29 · สร้างโดย `setup_migrate.ps1` จาก `c
 | I13 | ลำดับ step chain | _(จาก DAG / `.design/03_package_flow.md` หลัง `/gen-export`)_ | `.design/` | ⬜ |
 | I14 | overwrite / append / upsert + column list | load strategy `smart` · partition: `config/partitions_check.csv` | config, D-R7 | ⚠️ ถามต่อ task: DELETE หรือ TRUNCATE - AI เลือกเองไม่ได้ |
 | I15 | step สถานะ (success / running / checkpoint) | 030000 `running` → 090000 `success` (overwrite ทั้งตาราง) · guard ใน 020000 `COALESCE(success, TRUE)` · checkpoint ขยับที่ 070000 · ย้ายแบบ As-Is (Q12 = A) — ความเสี่ยง append ซ้ำ = GAP-01 | raw SQL `export_workflow.json` · Q12 ✅ SA 2026-10-29 | ✅ |
-| I16 | สภาพ repository ปลายทาง | ODI 14.1.2 · work repo schema `?` · context `DEV` · logical schema `DSS_ODI_LOG` · variables: v_max_partition, v_lag_minutes | config `odi.*`, rp00 P4 | ⚠️ ยืนยัน project ซ้ำใน Studio |
+| I16 | สภาพ repository ปลายทาง | ODI 14.1.2 · work repo schema `DSSDEV` (Q7) · context `DEV` · logical schema `DSS_ODI_LOG` · variables: v_max_partition, v_lag_minutes | config `odi.*`, rp00 P4 | ⚠️ ยืนยัน project ซ้ำใน Studio |
 | I17 | รูปแบบ output | Smart Import XML จาก kit + เอกสารส่งมอบ (`HANDOVER.md`, table inventory) | setup_migrate.ps1 (generator = kit) | ✅ |

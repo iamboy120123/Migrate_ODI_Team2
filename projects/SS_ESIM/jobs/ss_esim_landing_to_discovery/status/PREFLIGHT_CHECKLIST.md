@@ -7,7 +7,7 @@ README / Runbook Phase 0: **do not run `extract_workflow.py` (Phase 1) on real d
 | # | Status | Item | Note | Checked by |
 |---|---|---|---|---|
 | 1 | ✅ | Automation scripts are ready and pass the smoke test | smoke test passed | Setup.ps1 (auto) |
-| 2 | ⬜ | ODI Topology in the target repository has JDBC URL + user/password set on the data server (not in the export) — logical schema 'DSS_ODI_LOG' / context 'DEV' / login 'DSSDEV' (from Smart Export) | Data Server `DSS_ODI` · `jdbc:oracle:thin:@localhost:1521/XEPDB1` · user `dssdev` · physical schema `DSSDEV` · `DSS_ODI_LOG` → `DEV` ตรง · Test Connection ผ่าน | ✅ SA 2026-10-29 (ตอบในแชต) |
+| 2 | ✅ | ODI Topology in the target repository has JDBC URL + user/password set on the data server (not in the export) — logical schema 'DSS_ODI_LOG' / context 'DEV' / login 'DSSDEV' (from Smart Export) | Data Server `DSS_ODI` · `jdbc:oracle:thin:@localhost:1521/XEPDB1` · user `dssdev` · physical schema `DSSDEV` · `DSS_ODI_LOG` → `DEV` ตรง · Test Connection ผ่าน | ✅ SA 2026-10-29 (ตอบในแชต) |
 | 3 | ✅ | Target Oracle schema / DDL is ready in DSSDEV (else use output/ddl from Phase 6) | ตารางทั้ง 9 ใน `job.json` มีใน `input/oracle_ddl/_shared_all_tab_columns.csv` (owner DSSDEV, ดึง 2026-10-28) | ✅ SA 2026-10-29 (ตอบในแชต) |
 | 4 | ✅ | The real Blendata workflow export (.json) is in input/blendata/ | input/blendata/export_workflow.json | Setup.ps1 (auto) |
 | 5 | ✅ | DBA is informed + privileges for ODI Smart Import | `shared/team.json` `dev_ready.smart_import_rights: true`, `dev_ready.topology: true` (ตอบตอน `init`) | ✅ SA 2026-10-29 (ตอบในแชต) |
