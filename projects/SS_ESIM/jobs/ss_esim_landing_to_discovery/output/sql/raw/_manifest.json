@@ -1,0 +1,212 @@
+[
+  {
+    "task_id": "task_cc72e06e0d2b4dc29d37f72e1c729d1d",
+    "task_name": "010000_check_success_ss_esim_landing_to_discovery_workflow_status",
+    "target_table": "tb_staging_ss_esim_landing_to_discovery_workflow_status_temp",
+    "merge_keys": [],
+    "raw_sql_file": "output/sql/raw/task_cc72e06e0d2b4dc29d37f72e1c729d1d_010000_check_success_ss_esim_landing_to_discovery_workflow_status.sql",
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "aggregate",
+    "service_template": "service-job-aggregate",
+    "sink_mode": "Overwrite",
+    "parent_task": [
+      "task_9ff4d3791fcc469faaa88c57d5795ac0"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": ""
+  },
+  {
+    "task_id": "task_6451c19231b14139ab3d99b35ac9c734",
+    "task_name": "020000_overwrite_ss_esim_checkpoint_temp",
+    "target_table": "tb_staging_ss_esim_checkpoint_temp",
+    "merge_keys": [],
+    "raw_sql_file": "output/sql/raw/task_6451c19231b14139ab3d99b35ac9c734_020000_overwrite_ss_esim_checkpoint_temp.sql",
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "aggregate",
+    "service_template": "service-job-aggregate",
+    "sink_mode": "Overwrite",
+    "parent_task": [
+      "task_cc72e06e0d2b4dc29d37f72e1c729d1d"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": ""
+  },
+  {
+    "task_id": "task_1b899dbbbe54449d8218e58bed2a044f",
+    "task_name": "030000_running_ss_esim_landing_to_discovery_workflow_status",
+    "target_table": "tb_staging_ss_esim_landing_to_discovery_workflow_status",
+    "merge_keys": [],
+    "raw_sql_file": "output/sql/raw/task_1b899dbbbe54449d8218e58bed2a044f_030000_running_ss_esim_landing_to_discovery_workflow_status.sql",
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "aggregate",
+    "service_template": "service-job-aggregate",
+    "sink_mode": "Overwrite",
+    "parent_task": [
+      "task_6451c19231b14139ab3d99b35ac9c734"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": ""
+  },
+  {
+    "task_id": "task_b045fc16dd1e4272a3a28795693c2291",
+    "task_name": "040000_overwrite_ss_esim_raw_temp",
+    "target_table": "tb_staging_ss_esim_raw_temp",
+    "merge_keys": [],
+    "raw_sql_file": "output/sql/raw/task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp.sql",
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "aggregate",
+    "service_template": "service-job-aggregate",
+    "sink_mode": "Overwrite",
+    "parent_task": [
+      "task_1b899dbbbe54449d8218e58bed2a044f"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": ""
+  },
+  {
+    "task_id": "task_d60b3f0310094ab3bdbbad1eca43e81e",
+    "task_name": "050100_append_ss_esim_valid",
+    "target_table": "tb_transaction_ss_esim_valid",
+    "merge_keys": [],
+    "raw_sql_file": "output/sql/raw/task_d60b3f0310094ab3bdbbad1eca43e81e_050100_append_ss_esim_valid.sql",
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "aggregate",
+    "service_template": "service-job-aggregate",
+    "sink_mode": "Append",
+    "parent_task": [
+      "task_b045fc16dd1e4272a3a28795693c2291"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": ""
+  },
+  {
+    "task_id": "task_081c89ad18764c6ebe7fb2f7ed84d433",
+    "task_name": "050200_append_ss_esim_reject",
+    "target_table": "tb_transaction_ss_esim_reject",
+    "merge_keys": [],
+    "raw_sql_file": "output/sql/raw/task_081c89ad18764c6ebe7fb2f7ed84d433_050200_append_ss_esim_reject.sql",
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "aggregate",
+    "service_template": "service-job-aggregate",
+    "sink_mode": "Append",
+    "parent_task": [
+      "task_b045fc16dd1e4272a3a28795693c2291"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": ""
+  },
+  {
+    "task_id": "task_17e9202f814842e3b6d91fabe785f479",
+    "task_name": "050300_append_ss_esim_temp",
+    "target_table": "tb_transaction_ss_esim_temp",
+    "merge_keys": [
+      "cdr_id"
+    ],
+    "raw_sql_file": "output/sql/raw/task_17e9202f814842e3b6d91fabe785f479_050300_append_ss_esim_temp.sql",
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "aggregate",
+    "service_template": "service-job-aggregate",
+    "sink_mode": "Append",
+    "parent_task": [
+      "task_b045fc16dd1e4272a3a28795693c2291"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": ""
+  },
+  {
+    "task_id": "task_6660be16ef9e43bfbcc8974256bb27f6",
+    "task_name": "090000_success_ss_esim_landing_to_discovery_workflow_status",
+    "target_table": "tb_staging_ss_esim_landing_to_discovery_workflow_status",
+    "merge_keys": [],
+    "raw_sql_file": "output/sql/raw/task_6660be16ef9e43bfbcc8974256bb27f6_090000_success_ss_esim_landing_to_discovery_workflow_status.sql",
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "aggregate",
+    "service_template": "service-job-aggregate",
+    "sink_mode": "Overwrite",
+    "parent_task": [
+      "task_0a7791409dbc4c789e892d888f5e1a51",
+      "task_44a662474c7f4ce2b1d603c3391c002d"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": ""
+  },
+  {
+    "task_id": "task_8e949825ccb24a1eadf8c8d0f19bdf2b",
+    "task_name": "070000_overwrite_ss_esim_checkpoint",
+    "target_table": "tb_staging_ss_esim_checkpoint",
+    "merge_keys": [],
+    "raw_sql_file": "output/sql/raw/task_8e949825ccb24a1eadf8c8d0f19bdf2b_070000_overwrite_ss_esim_checkpoint.sql",
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "aggregate",
+    "service_template": "service-job-aggregate",
+    "sink_mode": "Overwrite",
+    "parent_task": [
+      "task_081c89ad18764c6ebe7fb2f7ed84d433",
+      "task_17e9202f814842e3b6d91fabe785f479",
+      "task_d60b3f0310094ab3bdbbad1eca43e81e"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": ""
+  },
+  {
+    "task_id": "task_0a7791409dbc4c789e892d888f5e1a51",
+    "task_name": "080000_cleanup_ss_esim_raw_temp",
+    "target_table": "tb_staging_ss_esim_raw_temp",
+    "merge_keys": [],
+    "raw_sql_file": null,
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "non_sql",
+    "service_template": "service-job-table-retention",
+    "sink_mode": "",
+    "parent_task": [
+      "task_8e949825ccb24a1eadf8c8d0f19bdf2b"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": "",
+    "review": "SA_DECIDE: task นี้ไม่มี SQL ต้องออกแบบวิธีทำเทียบเท่าใน ODI เอง"
+  },
+  {
+    "task_id": "task_9ff4d3791fcc469faaa88c57d5795ac0",
+    "task_name": "000000_recover_landing_ss_esim",
+    "target_table": "tb_landing_ss_esim",
+    "merge_keys": [],
+    "raw_sql_file": null,
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "non_sql",
+    "service_template": "service-job-recover",
+    "sink_mode": "",
+    "parent_task": [],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": "",
+    "review": "SA_DECIDE: task นี้ไม่มี SQL ต้องออกแบบวิธีทำเทียบเท่าใน ODI เอง"
+  },
+  {
+    "task_id": "task_44a662474c7f4ce2b1d603c3391c002d",
+    "task_name": "999999_export_data_to_mssql",
+    "target_table": "",
+    "merge_keys": [],
+    "raw_sql_file": "output/sql/raw/task_44a662474c7f4ce2b1d603c3391c002d_999999_export_data_to_mssql.sql",
+    "source_shape": "C:airflowExportModels/taskDetailString",
+    "kind": "export_jdbc",
+    "service_template": "service-job-export",
+    "sink_mode": "append",
+    "parent_task": [
+      "task_8e949825ccb24a1eadf8c8d0f19bdf2b"
+    ],
+    "workflow_name": "ss_esim_landing_to_discovery",
+    "schedule_time": "30 * * * *",
+    "db_platform": "sqlserver",
+    "review": "SA_DECIDE: export ออกนอก Oracle (dbPlatform=sqlserver) ต้องทำเป็น ODI mapping/interface ไม่ใช่ procedure ธรรมดา"
+  }
+]

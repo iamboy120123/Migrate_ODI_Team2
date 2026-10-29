@@ -1,0 +1,1 @@
+select CAST(date_format(process_date, 'yyyyMMdd') AS long) AS partition_date,checkpoint_partition,process_date from (select checkpoint_partition,process_date from tb_staging_ss_esim_checkpoint_temp)

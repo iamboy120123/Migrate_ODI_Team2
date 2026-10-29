@@ -1,0 +1,1 @@
+select 'TRUE' as success FROM DUAL

@@ -112,3 +112,10 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] B) แก้ตอนย้าย (ลบ `workflow_process_date` ที่ค้างก่อน append / หยุดเมื่อรอบก่อน running)
 
 > **Q12 = A (As-Is)** ✅ SA 2026-10-29 (ตอบในแชต) · GAP-01 disposition A · ต้องมี test case ล้มกลางทางใน Run Pack (G5)
+
+### Q13. ค่าของ `create_by` (`get_user()` ใน Spark)
+ข้อเท็จจริง: Spark `get_user()` = user ของ Blendata ที่รัน workflow · converted ใช้ `USER` ของ Oracle = login ของ Data Server ที่ ODI ใช้ (`DSSDEV`) · คอลัมน์นี้ถูกเขียนใน 040000, 050100, 050200, 050300, 999999 (raw SQL) · ที่มา: `/review-sql` รอบ 1, conversion-auditor
+- [x] A) `USER` (login ของ ODI) — บันทึกเป็น known diff ใน parity test **[แนะนำ]**
+- [ ] B) ค่าคงที่เท่ากับ user ของ Blendata เดิม (ต้องหาค่าจริงก่อน)
+
+> **Q13 = A (`USER` = login ของ ODI)** ✅ SA 2026-10-29 (ตอบในแชต) · ผล: Phase 7 ไม่เทียบคอลัมน์ `create_by` (known diff) · ไม่ต้องแก้ converted SQL

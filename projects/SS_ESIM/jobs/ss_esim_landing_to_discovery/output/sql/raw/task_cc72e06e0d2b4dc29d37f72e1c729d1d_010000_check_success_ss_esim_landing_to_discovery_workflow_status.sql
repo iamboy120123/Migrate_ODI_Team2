@@ -1,0 +1,1 @@
+select success from tb_staging_ss_esim_landing_to_discovery_workflow_status

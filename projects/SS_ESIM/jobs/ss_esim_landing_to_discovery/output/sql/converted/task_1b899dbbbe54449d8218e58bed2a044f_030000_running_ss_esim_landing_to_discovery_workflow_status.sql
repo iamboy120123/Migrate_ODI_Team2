@@ -1,0 +1,1 @@
+select 'TRUE' as running,TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') workflow_process_date FROM DUAL

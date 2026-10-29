@@ -21,7 +21,7 @@
 ## Manual checklist
 
 ### G2
-- [ ] G2.M1 SA ตรวจ `status/PHASE4_REVIEW_LOG.md` แล้ว และทุกข้อที่เปลี่ยน semantics มี Q ที่ปิดแล้ว (หรือ semantic-verifier = PASS)
+- [x] G2.M1 SA ตรวจ `status/PHASE4_REVIEW_LOG.md` แล้ว และทุกข้อที่เปลี่ยน semantics มี Q ที่ปิดแล้ว (หรือ semantic-verifier = PASS) ✅ SA 2026-10-29 (ตอบในแชต)
 
 ### G4
 - [ ] G4.M1 Smart Import แบบ **Overwrite** สำหรับ procedure/package ที่เปลี่ยน และตรวจใน Studio ว่า code เป็นเวอร์ชันใหม่
@@ -49,3 +49,6 @@
 
 | ID | Gate | ข้อที่ยกเว้น | ขอบเขต / เงื่อนไข | อนุมัติโดย | สถานะ |
 |---|---|---|---|---|---|
+| W1 | G2 | Spark config | Q3 (Spark config ของ Blendata) ยังเปิด เพราะรัน Blendata ไม่ได้ (P5/P5b ของ `rp00_preflight_20261029` ไม่มีผล) · ยกเว้นเฉพาะ 5 ประเด็นใน `status/PHASE4_REVIEW_LOG.md` ที่ขึ้นกับ Blendata: 040000 regex `\(` (สมมติ escapedStringLiterals=false) · 040000 TO_TIMESTAMP (สมมติวันที่ผิดรูป = NULL) · 020000 + 040000 now()→SYSDATE timezone (Q3/Q5) · 040000 b_no เมื่อ partner/sim_type NULL (D1) · **ไม่ครอบคลุม** `get_user()` → `create_by` (ต้อง `/decide`) และ G2.M1 · **ปิดเมื่อ** ได้ผล P5 + P5b จากผู้ที่เข้า Blendata ได้ ก่อนผ่าน G5 — ค่าไม่ตรงสมมติฐาน = แก้ converted SQL แล้ว build ใหม่ | ✅ SA 2026-10-29 (ตอบในแชต) | open |
+| W2 | G2 | PHASE4_REVIEW_LOG ยังมีรายการ OPEN | ขอบเขตเดียวกับ W1: OPEN ที่เหลือ 5 แถวคือประเด็นที่ขึ้นกับ Blendata ซึ่ง SA อนุมัติใน W1 (`get_user()` ปิดแล้วด้วย Q13) · แถว OPEN ใหม่ที่ไม่ใช่ 5 ประเด็นนี้ = ไม่ครอบคลุม · ปิดพร้อม W1 | ✅ SA 2026-10-29 (ตอบในแชต · waiver W1) | open |
+| W3 | G2 | REVIEW_FLAGS PENDING | ขอบเขตเดียวกับ W1: flag ของ 020000 / 040000 ค้าง PENDING เพราะมีแถว OPEN ใต้ W1 (ประเด็นอื่นของ 2 task นี้ FIXED / NO_CHANGE แล้ว) · ปิดพร้อม W1 → เปลี่ยน flag เป็น RESOLVED | ✅ SA 2026-10-29 (ตอบในแชต · waiver W1) | open |

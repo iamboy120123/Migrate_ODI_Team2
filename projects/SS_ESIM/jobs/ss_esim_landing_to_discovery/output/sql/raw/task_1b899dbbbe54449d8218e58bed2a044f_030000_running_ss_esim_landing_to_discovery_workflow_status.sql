@@ -1,0 +1,1 @@
+select true as running,date_format(now(),'yyyyMMddHHmmss') workflow_process_date
