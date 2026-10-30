@@ -1,0 +1,8 @@
+  V1 well-formed ✅
+  V2 field/topology/Admin/ITxtOrig ตรง reference (217 object) ✅
+  V3 GlobalId ไม่ซ้ำ (76 object) ✅
+  V4 internal reference ครบ (141 reference) ✅
+  V5 package chain 13 step: v_max_ → v_lag_ → 010000 → 020000 → 030000 → 040000 → 050100 → 050200 → 050300 → 070000 → 080000 → 999999 → 090000 ✅
+  V6 SQL 17 step ผ่าน (; / END; / '/' / Spark-ism) ✅
+
+[RESULT] ✅ ผ่าน — error 0, warn 0

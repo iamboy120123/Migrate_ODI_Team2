@@ -1,0 +1,10 @@
+{
+  "pack": "rp01_20261029",
+  "generated": "2026-10-29T21:09:41",
+  "version": 2,
+  "project": "SS_ESIM_L2D",
+  "package": "PKG_SS_ESIM_L2D",
+  "context": "DEV",
+  "work_user": "DSSDEV",
+  "note": "ผล CSV ตั้งชื่ออะไรก็ได้ — read_run_results.py จำประเภทจาก header"
+}

@@ -1,6 +1,6 @@
 # Migration Status — ss_esim_landing_to_discovery (Blendata → ODI)
 
-Updated: 2026-10-29 (rev.13) | SA: 41642975+iamboy120123@users.noreply.github.com
+Updated: 2026-10-30 (rev.15) | SA: 41642975+iamboy120123@users.noreply.github.com
 
 > สร้างโดย `setup_migrate.ps1` — Claude Code อัปเดตไฟล์นี้ด้วย `/update-status` ทุกครั้งที่จบ step
 
@@ -27,7 +27,7 @@ Updated: 2026-10-29 (rev.13) | SA: 41642975+iamboy120123@users.noreply.github.co
 | 4 | SQL Review | 🔄 2026-10-29 รอบ 1 — sql-reviewer + semantic-verifier 020000/030000/040000/090000 · PHASE4_REVIEW_LOG 20 ประเด็น (FIXED 9 · NO_CHANGE 5 · OPEN 6) · 030000/090000 RESOLVED · ⛔ G2 BLOCKED (Q3 เปิด · PENDING 19 · OPEN 6) · 🟡 waiver W1–W3 (5 ประเด็นที่ขึ้นกับ Blendata, ✅ SA 2026-10-29) · Q13 `create_by` = USER ✅ · G2.M1 ✅ SA 2026-10-29 → 🟡 **G2 WAIVED** 2026-10-29 · ถัดไป `/gen-export` |
 | 5 | DML + ODI Smart Import XML | ✅ 2026-10-29 build รอบ 2 (โครงพื้นฐาน) `output/odi_export/PKG_SS_ESIM_L2D.zip`: 2 variable · 11 procedure · 13 step (… 080000 → 999999 → 090000, K15) · validator 0 error · pre_delivery_gate FAIL 0 · V1/V2 PASS · retry (Q11) / Evaluate (Q2) / OdiSendMail (Q6) เลื่อนหลังรอบพื้นฐาน (SA) · SS_ESIM14 ไม่เคยรันผ่าน (SA) → ไม่ต้องเทียบตาม pre-delivery ข้อ 4 · SQL_REVIEW ✅ 5 · 🟡 5 · ⛔ 0 (⑥ คอมไพล์ DEV ผ่าน 10/10) · **เกรด B (ส่งได้ มีเงื่อนไข: waiver W1–W3)** · ✅ Smart Import เข้า DEV แล้ว 2026-10-29 20:42 (ผู้ใช้กด Finish ก่อนส่งภาพหน้า action — หลักฐาน `input/run_results/import_r1/`) |
 | 6 | DDL / DBA prereq | 🔄 2026-10-29 `output/ddl/01_create_tables.sql` (8 ตาราง ชนิดจริงจาก DEV 112 คอลัมน์ · fallback 0) + `output/dba/` · V3/V6 PASS · ddl-dba-reviewer: FIX 1–3 แก้แล้ว (K17) · DECIDE: ความยาวคอลัมน์ปลายทางสั้นกว่าต้นทาง 4 จุด (ก่อน G6) · DEV ไม่ต้องรันอะไรก่อน Run Pack แรก (ห้ามรัน 01_create_tables.sql บน DEV — ORA-00955) |
-| 7 | Validation (Dev run + L1/L2/L3) | ⏳ |
+| 7 | Validation (Dev run + L1/L2/L3) | 🔄 2026-10-29 Run Pack `rp01_20261029` (G3 PASS) + test-designer: D1_diagnose · S7a_seed_DEV (27 case, marker `/sa_test/rp01/`) · S7b_assertions · S7c_cleanup_DEV — ยังไม่ได้รัน · expected มาจากการตีความ Spark SQL ไม่ใช่การรัน Spark จริง (L37 — ยืนยันด้วย D1 Blendata) |
 | 8 | Backfill / Cutover | ⏳ |
 
 ## 3. Package (ลำดับรันใน ODI)
@@ -109,3 +109,5 @@ _(เติมหลัง Phase 5)_
 | 11 | 2026-10-29 | `/review-report`: K16 (review_report bug fix + odiRef → DSSDEV ใน compile pack) · K14 ข้อ 4–5 (V4 / review_report รับ waiver G2) · 🟡 ทั้งหมด NO_CHANGE (SA) · ⑥ คอมไพล์: คนรันใน DBeaver (`_ALL_compile.sql`, แผน 4e6d869f89) ไม่มี error 10/10 — 999999 ผ่านด้วย แปลว่า `ext_dss_checkpoint_tb_transaction_ss_esim_valid` มีอยู่ใน DEV แต่ไม่อยู่ใน `_shared_all_tab_columns.csv` (สมมติฐาน: view/synonym — ตรวจตอนปิด Q9) · grade.py = B |
 | 12 | 2026-10-29 | Smart Import `PKG_SS_ESIM_L2D.zip` เข้า DEV (import-lock โดยผู้ใช้) · ภาพหน้าจอ: project `SS_ESIM_L2D` + package chain v_max_partition → v_lag_minutes → 010000 … ตรงกับ build · Smart Import - Log 20:42:11 import procedure 050300…090000 · Topology ไม่มี object ซ้ำ (`DSS_ODI` / `DSS_ODI.DSSDEV` / `DSS_ODI_LOG` / context `DEV`) · Test Connection `DSS_ODI` หลัง import ผ่าน (ผู้ใช้แจ้ง 2026-10-29) · import-unlock แล้ว (ผู้ใช้แจ้ง) · Generate Scenario `PKG_SS_ESIM_L2D` 001 แล้ว (ผู้ใช้แจ้ง) · ถัดไป: `/gen-ddl` (ต้องมี `output/ddl/01_create_tables.sql` ก่อน Run Pack) → `/run-pack` |
 | 13 | 2026-10-29 | `/gen-ddl`: K17 (gen_ddl อ่าน `input/oracle_ddl`, index เฉพาะ merge · gen_dba_prereq นับ TRUNCATE / หา external ใน odiref) · DDL 8 ตาราง fallback 0 · V3/V6 PASS · ddl-dba-reviewer: เหลือ DECIDE ความยาวคอลัมน์ (CDR_FILENAME 255<500, CP_ID ฯลฯ 20<100, B_NO 50<76, TYPE_ERROR 100<~147) |
+| 14 | 2026-10-29 | `/run-pack` rp01_20261029: G3 PASS · V7 ไม่มี FAIL · test-designer เพิ่ม D1 / S7a / S7b / S7c + README (ข้าม S1 import แล้ว · ห้ามรัน S2a บน DEV) · สมมติฐานที่ต้องยืนยันด้วย D1: mapping ECP_ESIM_SalesT/AWN ใน DEV, landing ไม่มีแถวจริงหลัง checkpoint · cleanup คืนค่าไม่ได้: status / status_temp / raw_temp ทั้งตาราง |
+| 15 | 2026-10-30 | rp01 รอบทดสอบแรกบน DEV: D1 ผ่านทุกข้อบังคับ · S7a seed 30/30 (OK, 29 ต.ค. 21:29) · scenario `PKG_SS_ESIM_L2D` session 301 รัน 30 ต.ค. 09:13 สำเร็จ 13/13 step (ภาพ Operator ในแชต — ยังไม่ได้บันทึกลงโฟลเดอร์) · S7b assertions **55/55 PASS** (`input/run_results/rp01_20261029/S7b.csv`, REPORT.md) · expected มาจากการตีความ Spark ไม่ใช่การรัน Spark จริง (L37 / waiver W1) · S7c cleanup: `*_LEFT` = 0 ทุกตาราง · checkpoint MAX กลับเป็น 202610120900 · status NULL|TRUE (`S7c.csv`) |
