@@ -1,6 +1,6 @@
 # HANDOVER — ss_esim_landing_to_discovery (SS_ESIM_L2D) · R01
 
-อัปเดต 2026-10-30 · owner `iamboy120123` · branch `job/SS_ESIM/ss_esim_landing_to_discovery/R01` · สถานะเต็ม `status/MIGRATION_STATUS.md` rev.15
+อัปเดต 2026-10-30 (บ่าย) · owner `iamboy120123` · branch `job/SS_ESIM/ss_esim_landing_to_discovery/R01` · สถานะเต็ม `status/MIGRATION_STATUS.md` rev.15
 
 ## ทำไปแล้ว (ตาม `knowledge/WORKFLOW.md`)
 
@@ -46,7 +46,7 @@ cleanup รอบหน้า: `run_packs/rp01_20261029/S7c_cleanup_DEV.sql` (Al
 
 ## เส้นตาย / สมมติฐาน / ข้อควรรู้
 
-- ไม่มีล็อก import ค้าง (ผู้ใช้แจ้งว่า unlock แล้ว) แต่ **`status/IMPORT_LOG.md` ยังไม่มีแถว** — ตรวจด้วย `python tools/workspace.py status` ที่ root
+- **`status/IMPORT_LOG.md` ไม่มีแถวของ Smart Import 2026-10-29 20:42** (import เกิดจริง — หลักฐาน `input/run_results/import_r1/`) · ODI_DEV ว่าง ไม่มีล็อกค้าง (`workspace.py lock-status` 2026-10-30) · สาเหตุ (สมมติฐาน): `workspace.py` ถูกรันจากโฟลเดอร์งาน (ต้องรันที่ root) · ลองบันทึกย้อนหลังด้วย import-lock/unlock 2026-10-30 ไม่สำเร็จ (แท็บ Terminal ที่ AI เปิดไม่รับคำตอบของคน · ยังไม่ได้เขียน GitHub) → ให้ import ทับรอบหน้า (ตอนเติม Evaluate / retry) บันทึกแทน · กล่องสถานะจะขึ้น 05.2 ค้างจนถึงตอนนั้น
 - expected ของ rp01 มาจากการตีความ Spark SQL ไม่ใช่การรัน Spark (L37) — 55/55 PASS ≠ parity กับ Blendata
 - สมมติฐาน: `escapedStringLiterals=false` · วันที่ผิดรูปได้ NULL · timezone ของ `now()` = DB (W1) · `ext_dss_checkpoint_tb_transaction_ss_esim_valid` มีใน DEV (คอมไพล์ผ่าน) แต่ไม่อยู่ใน DDL CSV — น่าจะเป็น view / synonym
 - ห้ามรัน `convert_sql.py` ซ้ำ (เขียนทับ converted ที่แก้มือ — อยู่ใน git แล้ว)
