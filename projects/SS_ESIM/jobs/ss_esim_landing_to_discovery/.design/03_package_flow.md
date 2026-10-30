@@ -3,7 +3,7 @@
 ส่วน AUTO สร้างจาก `output/dml/_manifest.json` + `config/config.json` ด้วย `python scripts/pipeline/gen_design_docs.py`
 
 <!-- AUTO:BEGIN -->
-_สร้างโดย gen_design_docs.py 2026-10-29 18:13_
+_สร้างโดย gen_design_docs.py 2026-10-30 13:05_
 
 Package: `PKG_SS_ESIM_L2D` · Project: `SS_ESIM_L2D` · Logical schema: `DSS_ODI_LOG` / context `DEV`
 
@@ -20,8 +20,8 @@ Package: `PKG_SS_ESIM_L2D` · Project: `SS_ESIM_L2D` · Logical schema: `DSS_ODI
 | 9 | Procedure | `050300_append_ss_esim_temp` | STEP_1_INSERT | DSSDEV.TB_TRANSACTION_SS_ESIM_TEMP |
 | 10 | Procedure | `070000_overwrite_ss_esim_checkpoint` | STEP_1_DELETE, STEP_2_INSERT | DSSDEV.TB_STAGING_SS_ESIM_CHECKPOINT |
 | 11 | Procedure | `080000_cleanup_ss_esim_raw_temp` | STEP_1_DELETE | DSSDEV.TB_STAGING_SS_ESIM_RAW_TEMP |
-| 12 | Procedure | `090000_success_ss_esim_landing_to_discovery_workflow_status` | STEP_1_TRUNCATE, STEP_2_INSERT | DSSDEV.TB_STAGING_SS_ESIM_LANDING_TO_DISCOVERY_WORKFLOW_STATUS |
-| 13 | Procedure | `999999_export_data_to_mssql` | STEP_1_PLACEHOLDER | - |
+| 12 | Procedure | `999999_export_data_to_mssql` | STEP_1_PLACEHOLDER | - |
+| 13 | Procedure | `090000_success_ss_esim_landing_to_discovery_workflow_status` | STEP_1_TRUNCATE, STEP_2_INSERT | DSSDEV.TB_STAGING_SS_ESIM_LANDING_TO_DISCOVERY_WORKFLOW_STATUS |
 
 ```mermaid
 flowchart TD
@@ -48,9 +48,9 @@ flowchart TD
   S9 --> S10
   S11["11. 080000_cleanup_ss_esim_raw_temp"]
   S10 --> S11
-  S12["12. 090000_success_ss_esim_landing_to_discovery_workflow_status"]
+  S12["12. 999999_export_data_to_mssql"]
   S11 --> S12
-  S13["13. 999999_export_data_to_mssql"]
+  S13["13. 090000_success_ss_esim_landing_to_discovery_workflow_status"]
   S12 --> S13
   OK([success])
   S13 --> OK

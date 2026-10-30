@@ -98,7 +98,9 @@ def main():
     dml_by = {short_name(d["task_id"]): d for d in dml}
     hash_to_name = {r.get("task_id"): n for n, r in raw_by.items()}
 
-    names = sorted(set(raw_by) | set(dml_by), key=seq_key)
+    # K15: ลำดับเดียวกับ build_odi_export -- ช่อง seq ใน dml manifest แทนเลขหน้าชื่อ (เช่น 999999 ก่อน 090000)
+    seq_of = {n: d["seq"] for n, d in dml_by.items() if isinstance(d.get("seq"), int)}
+    names = sorted(set(raw_by) | set(dml_by), key=lambda n: ((0, seq_of[n]), n) if n in seq_of else seq_key(n))
 
     def code(n):
         return n.split("_", 1)[0]

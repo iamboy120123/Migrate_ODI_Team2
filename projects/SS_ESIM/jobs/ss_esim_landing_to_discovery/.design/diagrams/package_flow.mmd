@@ -22,9 +22,9 @@ flowchart TD
   S9 --> S10
   S11["11. 080000_cleanup_ss_esim_raw_temp"]
   S10 --> S11
-  S12["12. 090000_success_ss_esim_landing_to_discovery_workflow_status"]
+  S12["12. 999999_export_data_to_mssql"]
   S11 --> S12
-  S13["13. 999999_export_data_to_mssql"]
+  S13["13. 090000_success_ss_esim_landing_to_discovery_workflow_status"]
   S12 --> S13
   OK([success])
   S13 --> OK
