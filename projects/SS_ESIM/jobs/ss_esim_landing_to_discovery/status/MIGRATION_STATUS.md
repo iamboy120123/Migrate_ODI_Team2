@@ -1,6 +1,6 @@
 # Migration Status — ss_esim_landing_to_discovery (Blendata → ODI)
 
-Updated: 2026-10-30 (rev.16) | SA: 41642975+iamboy120123@users.noreply.github.com
+Updated: 2026-10-30 (rev.17) | SA: 41642975+iamboy120123@users.noreply.github.com
 
 > สร้างโดย `setup_migrate.ps1` — Claude Code อัปเดตไฟล์นี้ด้วย `/update-status` ทุกครั้งที่จบ step
 
@@ -113,3 +113,4 @@ _(เติมหลัง Phase 5)_
 | 14 | 2026-10-29 | `/run-pack` rp01_20261029: G3 PASS · V7 ไม่มี FAIL · test-designer เพิ่ม D1 / S7a / S7b / S7c + README (ข้าม S1 import แล้ว · ห้ามรัน S2a บน DEV) · สมมติฐานที่ต้องยืนยันด้วย D1: mapping ECP_ESIM_SalesT/AWN ใน DEV, landing ไม่มีแถวจริงหลัง checkpoint · cleanup คืนค่าไม่ได้: status / status_temp / raw_temp ทั้งตาราง |
 | 15 | 2026-10-30 | rp01 รอบทดสอบแรกบน DEV: D1 ผ่านทุกข้อบังคับ · S7a seed 30/30 (OK, 29 ต.ค. 21:29) · scenario `PKG_SS_ESIM_L2D` session 301 รัน 30 ต.ค. 09:13 สำเร็จ 13/13 step (ภาพ Operator ในแชต — ยังไม่ได้บันทึกลงโฟลเดอร์) · S7b assertions **55/55 PASS** (`input/run_results/rp01_20261029/S7b.csv`, REPORT.md) · expected มาจากการตีความ Spark ไม่ใช่การรัน Spark จริง (L37 / waiver W1) · S7c cleanup: `*_LEFT` = 0 ทุกตาราง · checkpoint MAX กลับเป็น 202610120900 · status NULL|TRUE (`S7c.csv`) |
 | 16 | 2026-10-30 | Intake ปิด I10 / I13 / I14 / I16 จากงานที่เสร็จแล้ว (I 17/17) · `.design/` regenerate ตามลำดับ K15 (K15b) |
+| 17 | 2026-10-30 | D1 บนเครื่อง (PySpark 4.2, seed เดียวกับ rp01, freeze now 2026-10-29 21:30 UTC, 12 combo) `output/d1/D1_REPORT.md`: 010000/020000/030000 STABLE · timeParserPolicy ไม่มีผลกับทุก task (ปิดแถว TO_TIMESTAMP เป็น NO_CHANGE) · **ansi=true → 040000 ล้มใน Spark** (CAST '' AS BIGINT — ไฟล์ไม่มีเลขรอบ) ส่วน Oracle ไม่ล้ม = ต่างกันถ้า Blendata เปิด ANSI · ansi=false: 040000 ขึ้นกับ escapedStringLiterals (Oracle = false/default) · ยอดแถว valid 7 / reject 13 / temp 6+1 ตรงกับ rp01 · สมมติฐาน: status.success / running เป็น boolean ใน Blendata · seed ต้อง type override · SPARK_HOME ในเครื่องผิด (ชี้ไฟล์ pyspark) ต้องตั้งเฉพาะคำสั่ง |

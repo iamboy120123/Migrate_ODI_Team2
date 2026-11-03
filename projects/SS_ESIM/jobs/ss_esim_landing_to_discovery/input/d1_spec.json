@@ -1,0 +1,50 @@
+{
+  "_note": "D1 from rp01 seed cases (run_packs/rp01_20261029/S7a_seed_DEV.sql) · partitions fixed to freeze_now · built 2026-10-30",
+  "order": [
+    "010000",
+    "020000",
+    "030000",
+    "040000",
+    "050100",
+    "050200",
+    "050300",
+    "070000",
+    "080000",
+    "090000"
+  ],
+  "truncate_tasks": {
+    "080000": "tb_staging_ss_esim_raw_temp"
+  },
+  "schema_csv": "input/oracle_ddl/_shared_all_tab_columns.csv",
+  "seeds_dir": "input/d1_seeds",
+  "freeze_now": "2026-10-29 21:30:00",
+  "timezone": "UTC",
+  "replace": {
+    "get_user()": "'BLENDATA_USER'"
+  },
+  "ignore_columns": [
+    "cdr_id",
+    "create_by"
+  ],
+  "matrix": {
+    "spark.sql.ansi.enabled": [
+      "true",
+      "false"
+    ],
+    "spark.sql.legacy.timeParserPolicy": [
+      "EXCEPTION",
+      "CORRECTED",
+      "LEGACY"
+    ],
+    "spark.sql.parser.escapedStringLiterals": [
+      "false",
+      "true"
+    ]
+  },
+  "type_overrides": {
+    "tb_staging_ss_esim_landing_to_discovery_workflow_status.success": "boolean",
+    "tb_staging_ss_esim_landing_to_discovery_workflow_status.running": "boolean",
+    "tb_staging_ss_esim_landing_to_discovery_workflow_status_temp.success": "boolean"
+  },
+  "_note_types": "status / status_temp: Spark sink of `select true as running|success` = boolean (สมมติฐาน — ยังไม่มี DESCRIBE จาก Blendata, P5b ข้อ 6)"
+}

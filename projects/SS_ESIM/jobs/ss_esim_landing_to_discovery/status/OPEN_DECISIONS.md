@@ -132,3 +132,9 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] B) DBA ขยายคอลัมน์ให้เท่าต้นทาง (ทุก env)
 
 > 2026-10-29: SA ให้เปิด Q14 ไว้ — รอบทดสอบ Dev ใช้ตารางเดิมไปก่อน · ต้องปิดก่อน G6 (ยังเปิด)
+
+### Q15. ค่า Spark config ที่ยึดเมื่อรัน Blendata ไม่ได้ (ต่อจาก Q3 = B · D1)
+ข้อเท็จจริง (D1 บนเครื่อง 2026-10-30, `output/d1/D1_REPORT.md`, seed เดียวกับ rp01): `timeParserPolicy` ไม่มีผลกับทุก task · `ansi.enabled = true` → 040000 ของ Spark ล้ม (`CAST '' AS BIGINT` เมื่อชื่อไฟล์ไม่มีเลขรอบ เช่น `..._103000.txt`) แต่ Oracle ไม่ล้ม · `ansi = false` → 040000 ขึ้นกับ `escapedStringLiterals`: Oracle ปัจจุบันตรงกับ `false` (ค่าเริ่มต้น — type_error ถูกตัดเหลือ `first_installed|`) · ยอดแถว valid 7 / reject 13 / temp 6 ตรงกับ rp01 · รัน Blendata ไม่ได้ (ผู้ใช้แจ้ง 2026-10-29, 2026-10-30)
+- [ ] A) ยึด `ansi = false` + `escapedStringLiterals = false` (ตรงกับ Oracle ปัจจุบัน) · ยอมรับความเสี่ยง: ถ้า Blendata จริงเปิด ANSI → Blendata ล้มทั้งรอบเมื่อเจอไฟล์ไม่มีเลขรอบ แต่ ODI ทำต่อได้ · ถ้า `escapedStringLiterals = true` → ข้อความ type_error ใน reject ต่าง **[แนะนำ]**
+- [ ] B) ยึด `ansi = true` — แก้ Oracle ให้ล้มแบบเดียวกับ Spark (ทำซ้ำพฤติกรรมล้มของต้นทาง)
+- [ ] C) ไม่ยึดค่าใด — รอค่าจริงจาก Blendata (G5 / W1 ค้างต่อ)

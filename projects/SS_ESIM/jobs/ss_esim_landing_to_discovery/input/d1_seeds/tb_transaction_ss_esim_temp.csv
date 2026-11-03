@@ -1,0 +1,2 @@
+partition_date,cdr_id,cdr_type,partner,owner,iccid,first_installed,profile_type,eid,sim_type,cdr_filename,chk_duplicate,filter_dtm,create_by,process_date,status,b_no,workflow_process_date
+20260101,SATRP01PRESEED,1,ECP,AWN,SATRP0121,2026-01-01 10:00:00,Production,\N,Step,/sa_test/rp01/PRESEED_cross_run_dup.txt,SATRP0121,2026-10-29 21:30:00,PRESEED,2026-10-29 21:30:00,UNMAP,ECP_ESIM_Step,19000101000000
