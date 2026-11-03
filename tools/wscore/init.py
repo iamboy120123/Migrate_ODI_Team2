@@ -28,7 +28,7 @@ FIELD_HELP = {
 
 GITIGNORE = """# สร้างโดย workspace.py init — ไฟล์ที่สร้างใหม่ได้เสมอ / ข้อมูลอ่อนไหว ไม่ขึ้น Git
 registry/
-STATUS.md
+/STATUS.md
 shared/db.local.json
 shared/.init_answers.json
 shared/target/_incoming/*
