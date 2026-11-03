@@ -91,6 +91,46 @@ def open_questions():
     return out
 
 
+def pending_values():
+    """K19: Q ที่ติ๊กแล้วแต่ยังไม่ปิดจริง (ติ๊ก 'ยังไม่ทราบ' / ยังมี ____) — ใช้เกณฑ์เดียวกับ G6 (verify_all.decision_state · kit K8)
+    คืน [(qid, title, reason)] · อ่านไม่ได้ = [] (ไม่เดา)"""
+    p = ROOT / "scripts" / "checks" / "verify_all.py"
+    if not p.exists():
+        return []
+    s = rd("status/OPEN_DECISIONS.md")
+    try:
+        spec = importlib.util.spec_from_file_location("ws_verify_all", p)
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+    except Exception:
+        return []
+    out = []
+    for mm in re.finditer(r"^### (Q\d+)\.\s*(.*?)$(.*?)(?=^### Q\d+\.|^## |\Z)", s, re.S | re.M):
+        body = mm.group(3)
+        if not re.search(r"^\s*-\s*\[[xX]\]", body, re.M):
+            continue                                  # ยังไม่ติ๊ก = อยู่ใน open_questions() แล้ว
+        ok, why = m.decision_state(body)
+        if not ok:
+            out.append((mm.group(1), mm.group(2).strip(), why))
+    return out
+
+
+def verify_stale():
+    """K19: output/verify/verify.json เก่ากว่าไฟล์งานที่ gate ใช้ → สถานะ gate อาจไม่ตรงความจริง (คืนข้อความ หรือ '')"""
+    vj = ROOT / "output/verify/verify.json"
+    if not vj.exists():
+        return ""
+    t0 = vj.stat().st_mtime
+    newer = []
+    for pat in ("status/*.md", "output/sql/converted/**/*.sql", "output/dml/*.sql", "output/odi_export/*.zip", "output/ddl/*.sql", "config/config.json", "input/run_results/**/*"):
+        for f in ROOT.glob(pat):
+            if f.is_file() and f.stat().st_mtime > t0 + 60:
+                newer.append(f.relative_to(ROOT).as_posix())
+    if not newer:
+        return ""
+    return f"ผลตรวจ (verify.json) เก่ากว่า {len(newer)} ไฟล์ (เช่น {newer[0]}) — สถานะ gate อาจไม่ตรง"
+
+
 def log_rows(rel: str, key: str):
     """แถวในตาราง log (DEPLOY_LOG / IMPORT_LOG) ที่คอลัมน์แรกตรง key"""
     out = []
@@ -265,11 +305,15 @@ def compute(pushed: bool = False) -> dict:
         if s["state"] == DONE:
             last = s
     qs = open_questions()
+    pv = pending_values()
+    vs = verify_stale()
+    if vs:
+        reminders.append({"label": "ผลตรวจไม่เป็นปัจจุบัน", "key": "verify", "note": vs})
     return {
         "job": ROOT.name, "project": meta.get("project", ""), "round": meta.get("round", "R01"), "branch": br,
         "owner": meta.get("owner", ""), "issue": iss, "id_base": (cfg.get("odi") or {}).get("id_base"),
         "steps": S, "done": n_done, "total": len(S), "current": cur, "last": last,
-        "blocked": [s for s in S if s["state"] == BLOCK], "open_q": qs, "reminders": reminders,
+        "blocked": [s for s in S if s["state"] == BLOCK], "open_q": qs, "pending_q": pv, "reminders": reminders,
         "sql": sql_review_counts(), "grade": grade.get("grade"), "speed": speed_level(grade),
     }
 
@@ -278,7 +322,7 @@ HINT = {"01": "/next-step", "02": "/intake", "03.1": "/preflight", "03.2": "/con
         "04": "/inputs → /gen-export → /verify", "05.1": "รัน output/ddl ด้วย run_sql.py (ขออนุญาตก่อน) หรือคนรันใน DBeaver · บันทึก DEPLOY_LOG",
         "05.2": "workspace.py import-lock", "05.3": "/run-pack", "06": "/validation → /compare-d2", "handoff": "/handoff",
         "unlock": "ที่ root: python tools/workspace.py import-unlock --job <งานนี้> · ต้องใช้นาน: import-lock --extend --reason \"…\"", "cutover": "/cutover", "golive": "/gate G7", "branch": "git push -u origin HEAD (ถามก่อน)", "files": "วางไฟล์ตามที่ new-job บอก",
-        "new": "workspace.py new-job"}
+        "new": "workspace.py new-job", "verify": "python scripts/checks/check_gate.py --all (รัน verify ใหม่) หรือ /verify"}
 
 
 def wiki_step(key: str) -> str:
@@ -305,6 +349,8 @@ def box(r: dict) -> str:
         lines.append(f"│ ผลรีวิว SQL : ✅ {sql[0]} · 🟡 {sql[1]} · ⛔ {sql[2]}")
     if r["open_q"]:
         lines.append(f"│ คำถามเปิด   : {len(r['open_q'])} ข้อ ({', '.join(q for q, _ in r['open_q'][:5])}{' …' if len(r['open_q']) > 5 else ''})")
+    if r.get("pending_q"):
+        lines.append(f"│ ค้างค่า      : {len(r['pending_q'])} ข้อ ({', '.join(q for q, _, _ in r['pending_q'][:6])}) — ตอบแล้วแต่ยังขาดค่าจริง (ต้องปิดก่อน G6)")
     st = wiki_step(cur["key"] if cur else "")
     if st:
         try:
@@ -335,6 +381,10 @@ def table(r: dict) -> str:
         out.append(f"**รอ / ติด:** {cur['label']} — {cur['who'] or '-'} · {cur['note']}")
     if r["open_q"]:
         out.append(f"**คำถามเปิด:** " + " · ".join(f"{q} {t[:40]}" for q, t in r["open_q"][:6]))
+    if r.get("pending_q"):
+        out.append("**ตอบแล้วแต่ยังขาดค่า (ต้องปิดก่อน G6):** " + " · ".join(f"{q} {t[:40]} ({w.split(' (เช่น')[0]})" for q, t, w in r["pending_q"][:8]))
+    for rm in r.get("reminders") or []:
+        out.append(f"**เตือน:** {rm['label']} — {rm['note']} · {HINT.get(rm['key'], '')}")
     return "\n".join(out)
 
 
