@@ -135,6 +135,8 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 
 ### Q15. ค่า Spark config ที่ยึดเมื่อรัน Blendata ไม่ได้ (ต่อจาก Q3 = B · D1)
 ข้อเท็จจริง (D1 บนเครื่อง 2026-10-30, `output/d1/D1_REPORT.md`, seed เดียวกับ rp01): `timeParserPolicy` ไม่มีผลกับทุก task · `ansi.enabled = true` → 040000 ของ Spark ล้ม (`CAST '' AS BIGINT` เมื่อชื่อไฟล์ไม่มีเลขรอบ เช่น `..._103000.txt`) แต่ Oracle ไม่ล้ม · `ansi = false` → 040000 ขึ้นกับ `escapedStringLiterals`: Oracle ปัจจุบันตรงกับ `false` (ค่าเริ่มต้น — type_error ถูกตัดเหลือ `first_installed|`) · ยอดแถว valid 7 / reject 13 / temp 6 ตรงกับ rp01 · รัน Blendata ไม่ได้ (ผู้ใช้แจ้ง 2026-10-29, 2026-10-30)
-- [ ] A) ยึด `ansi = false` + `escapedStringLiterals = false` (ตรงกับ Oracle ปัจจุบัน) · ยอมรับความเสี่ยง: ถ้า Blendata จริงเปิด ANSI → Blendata ล้มทั้งรอบเมื่อเจอไฟล์ไม่มีเลขรอบ แต่ ODI ทำต่อได้ · ถ้า `escapedStringLiterals = true` → ข้อความ type_error ใน reject ต่าง **[แนะนำ]**
+- [x] A) ยึด `ansi = false` + `escapedStringLiterals = false` (ตรงกับ Oracle ปัจจุบัน) · ยอมรับความเสี่ยง: ถ้า Blendata จริงเปิด ANSI → Blendata ล้มทั้งรอบเมื่อเจอไฟล์ไม่มีเลขรอบ แต่ ODI ทำต่อได้ · ถ้า `escapedStringLiterals = true` → ข้อความ type_error ใน reject ต่าง **[แนะนำ]**
 - [ ] B) ยึด `ansi = true` — แก้ Oracle ให้ล้มแบบเดียวกับ Spark (ทำซ้ำพฤติกรรมล้มของต้นทาง)
 - [ ] C) ไม่ยึดค่าใด — รอค่าจริงจาก Blendata (G5 / W1 ค้างต่อ)
+
+> **Q15 = A (ยึด `ansi = false` + `escapedStringLiterals = false`)** ✅ SA 2026-11-03 (ตอบในแชต) · ผล: เทียบผล D1 combo `enabled=false-*-escapedStringLiterals=false` กับ Oracle (G5) · known risk บันทึกใน HANDOVER: ถ้า Blendata จริงเปิด ANSI → ต้นทางล้มเมื่อชื่อไฟล์ไม่มีเลขรอบ แต่ ODI ทำต่อ · ถ้า `escapedStringLiterals = true` → ข้อความ type_error ใน reject ต่าง · ไม่ปลด Q3 / I14 (`partitionOverwriteMode` ยังไม่ทราบ — ยังต้องได้ค่าจริงก่อนปิด G2)
