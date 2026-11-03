@@ -1,6 +1,6 @@
 # TRACEABILITY — ss_esim_landing_to_discovery
 
-Generated: 2026-10-30 13:40:06 · `python scripts/checks/verify_all.py --level V8`
+Generated: 2026-11-03 12:20:22 · `python scripts/checks/verify_all.py --level V8`
 
 ✅ ครบ · ⬜ ยังไม่มี · 📝 spec ยังไม่เติม · n/a ไม่เกี่ยว
 
