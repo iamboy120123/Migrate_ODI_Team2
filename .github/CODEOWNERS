@@ -1,0 +1,8 @@
+# ไฟล์ตัดสินใจและ gate ต้องได้ review จากผู้อนุมัติ (สร้างโดย workspace.py init-github)
+projects/*/jobs/*/status/OPEN_DECISIONS.md @mm
+projects/*/jobs/*/status/GATES.md @mm
+projects/*/jobs/*/status/PREFLIGHT_CHECKLIST.md @mm
+/kit/ @mm
+/shared/ @mm
+/.github/ @mm
+/tools/ @mm

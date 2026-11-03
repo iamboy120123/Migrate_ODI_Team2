@@ -7,7 +7,8 @@
     "default_env": "DEV"
   },
   "github": {
-    "mode": "a"
+    "mode": "a",
+    "lock_issue": 1
   },
   "lock": {
     "expire_hours": 2
