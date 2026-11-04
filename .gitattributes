@@ -7,3 +7,8 @@
 *.zip binary
 *.ps1 text eol=crlf
 *.cmd text eol=crlf
+
+# K20: ตารางที่ต่อท้ายอย่างเดียว — merge แบบรวมบรรทัด (กัน conflict เมื่อหลาย branch เพิ่มแถวพร้อมกัน)
+kit/CHANGES-ws.md merge=union
+kit/knowledge/lessons-learned.md merge=union
+kit/knowledge/glossary-kit.md merge=union

@@ -722,7 +722,9 @@ def run_kit_base(args):
     --from-job J = เอาจากงานที่มีอยู่ (ใช้ไฟล์ *.bak-* ถ้าไฟล์ในงานถูกแก้) — ไม่ต้องมี PowerShell
     ไม่ใส่ --from-job = probe จาก setup_migrate.ps1 (ต้องมี PowerShell)"""
     C.require_workspace()
-    if not args.from_job:
+    if not args.from_job and getattr(args, "untrack", False) and JOB_BASE.exists():
+        C.info("มี kit/job_base แล้ว — ข้ามการสร้างใหม่ (K20) · สร้างใหม่: kit-base (ไม่ใส่ --untrack) หรือ --from-job J")
+    elif not args.from_job:
         probe_kit()
     else:
         base = C.read_json(BASE_MANIFEST).get("files", {})
@@ -981,22 +983,49 @@ def run_kit_promote(args):
         print(f"     - {c}")
     k = args.k or C.ask("", "รหัสการแก้ (K#) และหัวข้อ", example="K8-check-sql-paren", validate=lambda v: None if re.match(r"^K\d+[\w-]*$", v) else "รูปแบบ K<เลข>-<หัวข้อ>", use='ตั้งชื่อการแก้ kit ให้ทีมอ้างถึงได้', rec='K ตามด้วยเลขถัดไปใน kit/CHANGES-ws.md และหัวข้อสั้น ๆ', skip='ระบบพักไว้', more='ดูเลขล่าสุดใน kit/CHANGES-ws.md แล้วบวก 1 เช่น ล่าสุด K7 → K8-check-sql-paren')
     why = args.reason or C.ask("", "แก้เพราะอะไร (หลักฐาน / บทเรียน)", example="convert_sql ไม่ qualify ตารางหลัง FROM ( — ผล D-R2 FAIL ใน payment", use='ให้ผู้ตรวจรู้ว่าแก้เพราะเจอปัญหาอะไรจริง', rec='อ้างผลตรวจหรืองานที่เจอปัญหา เพื่อให้ตรวจย้อนได้', skip='ระบบพักไว้', more="ตัวอย่าง: 'convert_sql ไม่ใส่ schema หน้าตารางหลัง FROM ( — เจอในงาน payment ตอนตรวจ D-R2'")
-    pdir = PATCHES / f"{_dt.date.today():%Y%m%d}_{k}"
-    for c in changed:
-        C.copy_file(j / c, pdir / "files" / c)
-    C.write_text(pdir / "NOTE.md", f"# {k}\n\n- จากงาน: {C.rel(j)}\n- วันที่: {C.today()}\n- โดย: {C.git_user()}\n- เหตุผล: {why}\n- ไฟล์: " + ", ".join(changed) + "\n")
-    ch = C.KIT / "CHANGES-ws.md"
+    pname = f"{_dt.date.today():%Y%m%d}_{k}"
+    note = f"# {k}\n\n- จากงาน: {C.rel(j)}\n- วันที่: {C.today()}\n- โดย: {C.git_user()}\n- เหตุผล: {why}\n- ไฟล์: " + ", ".join(changed) + "\n"
     head = "# CHANGES-ws — การแก้ kit ที่ยังไม่ได้ backport เข้า setup_migrate.ps1\n\n| K# | วันที่ | จากงาน | ไฟล์ | เหตุผล | backport แล้ว |\n|---|---|---|---|---|---|\n"
-    C.write_text(ch, (C.read_text(ch) or head).rstrip("\n") + f"\n| {k} | {C.today()} | {C.rel(j)} | {len(changed)} ไฟล์ | {why} | ⬜ |\n")
-    C.ok(f"เก็บที่ {C.rel(pdir)} · บันทึกใน kit/CHANGES-ws.md")
-    if (C.ROOT / ".git").exists():
-        br = f"kit/{k}"
-        C.info(f"เปิด PR แยก: git switch -c {br} · git add kit/ · git commit · push (ถามก่อน) · ผู้อนุมัติ review")
-        if C.ask("", f"สร้าง branch {br} + commit ให้เลยไหม", options=[("y", "สร้าง branch + commit ให้เลย"), ("n", "ไม่ต้อง ฉันทำเอง")], recommend="y", use='ส่งการแก้ kit เข้า PR ให้ผู้ดูแล kit ตรวจ', skip='ใช้ค่าแนะนำ', unknown=False, more='ระบบสร้าง branch ในเครื่องและ commit ไฟล์ที่แก้ ยังไม่ push · ทำเอง = คุณ commit เอง') == "y":
-            C.git("switch", "-c", br)
-            C.git("add", "--", str(PATCHES), str(ch))
-            C.git("commit", "-m", f"kit: {k} — {why}", check=False)
-            push_branch(br)
+    row = f"| {k} | {C.today()} | {C.rel(j)} | {len(changed)} ไฟล์ | {why} | ⬜ |\n"
+
+    def _write(kit_root: Path):
+        pdir = kit_root / "patches" / pname
+        for c in changed:
+            C.copy_file(j / c, pdir / "files" / c)
+        C.write_text(pdir / "NOTE.md", note)
+        ch = kit_root / "CHANGES-ws.md"
+        C.write_text(ch, (C.read_text(ch) or head).rstrip("\n") + "\n" + row)
+
+    if not (C.ROOT / ".git").exists():
+        _write(C.KIT)
+        C.ok(f"เก็บที่ {C.rel(PATCHES / pname)} · บันทึกใน kit/CHANGES-ws.md")
+        return
+    br = f"kit/{k}"
+    if C.ask("", f"สร้าง branch {br} (จาก origin/main) + commit ให้เลยไหม", options=[("y", "สร้าง branch + commit ให้เลย"), ("n", "ไม่ต้อง เขียนไฟล์ลง kit/ ของ branch นี้เท่านั้น")], recommend="y",
+             use='ส่งการแก้ kit เข้า PR ให้ผู้ดูแล kit ตรวจ', skip='ใช้ค่าแนะนำ', unknown=False,
+             more='K20: branch แตกจาก origin/main ผ่าน git worktree (ไม่แตะ branch ที่คุณทำงานอยู่) · PR จึงมีเฉพาะการแก้ kit ไม่ติด commit ของงาน · แล้ว merge กลับเข้า branch งานให้ (การแก้ในงานไม่ถูกนับเป็น "ค้าง") · ยังไม่ push') != "y":
+        _write(C.KIT)
+        C.ok(f"เก็บที่ {C.rel(PATCHES / pname)} (branch ปัจจุบัน)")
+        return
+    C.git("fetch", "-q", "origin", "main", check=False)
+    base = "origin/main" if C.git("rev-parse", "--verify", "-q", "origin/main", check=False) else "main"
+    wt = C.REGISTRY / f"_wt_{k}"
+    shutil.rmtree(wt, ignore_errors=True)
+    C.git("worktree", "add", "-q", str(wt), "-b", br, base)
+    try:
+        _write(wt / "kit")
+        C.git("add", "--", "kit/patches", "kit/CHANGES-ws.md", cwd=wt)
+        C.git("commit", "-q", "-m", f"kit: {k} — {why}", cwd=wt, check=False)
+    finally:
+        C.git("worktree", "remove", "--force", str(wt), check=False)
+        C.git("worktree", "prune", check=False)
+    r = C.run(["git", "merge", "--no-edit", br], cwd=C.ROOT, check=False)
+    if r.returncode != 0:
+        C.run(["git", "merge", "--abort"], cwd=C.ROOT, check=False)
+        C.warn(f"merge {br} กลับเข้า branch งานไม่ได้ (conflict) — ยกเลิก merge แล้ว · branch {br} ยังอยู่ครบ · ทำเอง: git merge {br}")
+    else:
+        C.ok(f"branch {br} (จาก {base}) + merge กลับเข้า branch งานแล้ว · บันทึกใน kit/CHANGES-ws.md")
+    push_branch(br)
     C.info("หลัง merge: ทุกคน `git pull` แล้ว `python tools/workspace.py sync-kit --all` จะได้การแก้นี้")
 
 
