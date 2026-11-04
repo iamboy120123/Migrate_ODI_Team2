@@ -1,6 +1,6 @@
 # Migration Status — ss_esim_landing_to_discovery (Blendata → ODI)
 
-Updated: 2026-11-04 (rev.19) | SA: 41642975+iamboy120123@users.noreply.github.com
+Updated: 2026-11-04 (rev.20) | SA: 41642975+iamboy120123@users.noreply.github.com
 
 > สร้างโดย `setup_migrate.ps1` — Claude Code อัปเดตไฟล์นี้ด้วย `/update-status` ทุกครั้งที่จบ step
 
@@ -117,3 +117,4 @@ _(เติมหลัง Phase 5)_
 | 17 | 2026-10-30 | D1 บนเครื่อง (PySpark 4.2, seed เดียวกับ rp01, freeze now 2026-10-29 21:30 UTC, 12 combo) `output/d1/D1_REPORT.md`: 010000/020000/030000 STABLE · timeParserPolicy ไม่มีผลกับทุก task (ปิดแถว TO_TIMESTAMP เป็น NO_CHANGE) · **ansi=true → 040000 ล้มใน Spark** (CAST '' AS BIGINT — ไฟล์ไม่มีเลขรอบ) ส่วน Oracle ไม่ล้ม = ต่างกันถ้า Blendata เปิด ANSI · ansi=false: 040000 ขึ้นกับ escapedStringLiterals (Oracle = false/default) · ยอดแถว valid 7 / reject 13 / temp 6+1 ตรงกับ rp01 · สมมติฐาน: status.success / running เป็น boolean ใน Blendata · seed ต้อง type override · SPARK_HOME ในเครื่องผิด (ชี้ไฟล์ pyspark) ต้องตั้งเฉพาะคำสั่ง |
 | 18 | 2026-11-03 | Q15 = A (ยึด ansi=false + escapedStringLiterals=false · ตาม D1) ✅ SA · Q3 / I14 ยังค้าง (partitionOverwriteMode) · เก็บงานค้าง: commit D1 + ย้าย *.json.bak / snpstemp ไป registry/_trash · ของกลางแยก branch team/init-github |
 | 19 | 2026-11-04 | Smart Import รอบ 2 ล้ม ODI-17591 (`v_max_partition` already used): repository มี project / folder / package / procedure / step GlobalId ต่างจาก build (ตัวแปรตรง) → Smart Export จาก Studio (`input/run_results/import_r2_20261104/`) · K21 `sync_guid_from_export.py` เขียน `_guid_keys.json` (builder อ่านไฟล์นี้ ไม่ใช่ `_guid_map.json`) · rebuild: GlobalId ตรง repository 46/46 object หลัก · เนื้อหา XML ไม่เปลี่ยน (ต่างแค่ GlobalId/เวลา) · validator 0 error · G3 PASS · พบ procedure `000000_recover_landing_ss_esim` ค้างใน repository (จาก build รอบแรก ไม่อยู่ใน package) · รอ import ใหม่ (import-lock) |
+| 20 | 2026-11-04 | ✅ Smart Import รอบ 3 สำเร็จ 17:3x (project = Merge · ตัวแปร = Reuse · package/procedure = Overwrite · L43) · IMPORT_LOG แถว 17:33 ok = รอบนี้ · **แถว 15:45 ok ไม่ถูกต้อง** (import ล้ม ODI-17591 ทุกครั้ง — IMPORT_LOG แก้มือไม่ได้ จึงบันทึกที่นี่) · Report: Topology Physical Schema `DSS_ODI.DSSDEV` = Overwrite (DEV ใช้ร่วม — รอบหน้าตั้ง Reuse) · ถัดไป: generate scenario → Smart Export หลัง import → G4 |
