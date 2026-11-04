@@ -1,7 +1,7 @@
 -- ============================================================
 -- ODI Procedure Body: task_6451c19231b14139ab3d99b35ac9c734_020000_overwrite_ss_esim_checkpoint_temp
 -- Target Table      : DSSDEV.TB_STAGING_SS_ESIM_CHECKPOINT_TEMP
--- Generated         : 2026-10-29T18:11:04
+-- Generated         : 2026-11-04T09:34:08
 -- Strategy          : overwrite-by-partition (I14 delete_by_partition: PARTITION_DATE)
 -- Error Handling    : fail-fast
 -- ============================================================

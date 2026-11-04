@@ -1,7 +1,7 @@
 -- ============================================================
 -- ODI Procedure Body: task_d60b3f0310094ab3bdbbad1eca43e81e_050100_append_ss_esim_valid
 -- Target Table      : DSSDEV.TB_TRANSACTION_SS_ESIM_VALID
--- Generated         : 2026-10-29T18:11:04
+-- Generated         : 2026-11-04T09:34:09
 -- Strategy          : append (smart->sinkOption.mode=Append)
 -- Error Handling    : fail-fast
 -- ============================================================

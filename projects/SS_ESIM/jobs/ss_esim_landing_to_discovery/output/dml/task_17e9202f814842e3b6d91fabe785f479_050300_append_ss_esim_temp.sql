@@ -1,7 +1,7 @@
 -- ============================================================
 -- ODI Procedure Body: task_17e9202f814842e3b6d91fabe785f479_050300_append_ss_esim_temp
 -- Target Table      : DSSDEV.TB_TRANSACTION_SS_ESIM_TEMP
--- Generated         : 2026-10-29T18:11:04
+-- Generated         : 2026-11-04T09:34:08
 -- Strategy          : append (smart->sinkOption.mode=Append, keyColumns=cdr_id ignored)
 -- Error Handling    : fail-fast
 -- ============================================================

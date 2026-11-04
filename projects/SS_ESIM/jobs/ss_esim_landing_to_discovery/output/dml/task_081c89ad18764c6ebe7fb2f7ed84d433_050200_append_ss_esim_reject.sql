@@ -1,7 +1,7 @@
 -- ============================================================
 -- ODI Procedure Body: task_081c89ad18764c6ebe7fb2f7ed84d433_050200_append_ss_esim_reject
 -- Target Table      : DSSDEV.TB_TRANSACTION_SS_ESIM_REJECT
--- Generated         : 2026-10-29T18:11:04
+-- Generated         : 2026-11-04T09:34:08
 -- Strategy          : append (smart->sinkOption.mode=Append)
 -- Error Handling    : fail-fast
 -- ============================================================

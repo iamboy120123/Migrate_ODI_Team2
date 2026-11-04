@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-03 12:20:16",
+  "generated": "2026-11-04 09:38:09",
   "levels": {
     "V1": {
       "status": "PASS",
@@ -98,7 +98,7 @@
       "items": [
         {
           "status": "INFO",
-          "msg": "Run Pack ล่าสุด: rp_import_check"
+          "msg": "Run Pack ล่าสุด: rp_g4_diag"
         },
         {
           "status": "INFO",
@@ -115,7 +115,7 @@
       ]
     },
     "V6": {
-      "status": "PASS",
+      "status": "WARN",
       "items": [
         {
           "status": "PASS",
@@ -124,6 +124,10 @@
         {
           "status": "PASS",
           "msg": "target ใน DML มีใน DDL ครบ 8 ตาราง"
+        },
+        {
+          "status": "WARN",
+          "msg": "DDL เก่ากว่า DML manifest — รัน gen_ddl.py ใหม่"
         },
         {
           "status": "INFO",
@@ -136,11 +140,19 @@
       "items": [
         {
           "status": "PASS",
-          "msg": "Run Pack 5 ชุด 34 สคริปต์ + SQL ใน output/dba|backfill|ddl|validation: ไม่มี SET/SPOOL/EXEC/'/'"
+          "msg": "Run Pack 6 ชุด 35 สคริปต์ + SQL ใน output/dba|backfill|ddl|validation: ไม่มี SET/SPOOL/EXEC/'/'"
         },
         {
           "status": "WARN",
           "msg": "rp_compile: ไม่มี README.md"
+        },
+        {
+          "status": "WARN",
+          "msg": "rp_g4_diag: ไม่มี README.md"
+        },
+        {
+          "status": "WARN",
+          "msg": "rp_g4_diag/D1_var_name_conflict.sql: 3 statement แต่ README ไม่บอก Execute Script (Alt+X)"
         },
         {
           "status": "WARN",
@@ -183,7 +195,7 @@
       "items": [
         {
           "status": "PASS",
-          "msg": "hook self-test 55 เคส ผ่านทั้งหมด"
+          "msg": "hook self-test 57 เคส ผ่านทั้งหมด"
         }
       ]
     }

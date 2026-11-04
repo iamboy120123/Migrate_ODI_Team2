@@ -1,7 +1,7 @@
 -- ============================================================
 -- ODI Procedure Body: task_6660be16ef9e43bfbcc8974256bb27f6_090000_success_ss_esim_landing_to_discovery_workflow_status
 -- Target Table      : DSSDEV.TB_STAGING_SS_ESIM_LANDING_TO_DISCOVERY_WORKFLOW_STATUS
--- Generated         : 2026-10-29T18:11:04
+-- Generated         : 2026-11-04T09:34:08
 -- Strategy          : overwrite (smart->sinkOption.mode=overwrite)
 -- Error Handling    : fail-fast
 -- ============================================================

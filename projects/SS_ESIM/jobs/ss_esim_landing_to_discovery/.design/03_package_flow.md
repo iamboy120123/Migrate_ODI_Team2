@@ -3,7 +3,7 @@
 ส่วน AUTO สร้างจาก `output/dml/_manifest.json` + `config/config.json` ด้วย `python scripts/pipeline/gen_design_docs.py`
 
 <!-- AUTO:BEGIN -->
-_สร้างโดย gen_design_docs.py 2026-10-30 13:05_
+_สร้างโดย gen_design_docs.py 2026-11-04 09:35_
 
 Package: `PKG_SS_ESIM_L2D` · Project: `SS_ESIM_L2D` · Logical schema: `DSS_ODI_LOG` / context `DEV`
 

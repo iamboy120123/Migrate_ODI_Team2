@@ -3,7 +3,7 @@
 ส่วน AUTO สร้างจาก manifest ด้วย `python scripts/pipeline/gen_design_docs.py` — หมายเหตุเพิ่มเติมเขียนใต้ block
 
 <!-- AUTO:BEGIN -->
-_สร้างโดย gen_design_docs.py 2026-10-30 13:05_
+_สร้างโดย gen_design_docs.py 2026-11-04 09:35_
 
 - Workflow: `SS_ESIM_L2D` · schedule (Blendata): `30 * * * *`
 - task ทั้งหมด 12 · procedure 11 · variable 1 · excluded 0 · pending 0

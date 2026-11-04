@@ -1,6 +1,6 @@
 # Migration Status — ss_esim_landing_to_discovery (Blendata → ODI)
 
-Updated: 2026-11-03 (rev.18) | SA: 41642975+iamboy120123@users.noreply.github.com
+Updated: 2026-11-04 (rev.19) | SA: 41642975+iamboy120123@users.noreply.github.com
 
 > สร้างโดย `setup_migrate.ps1` — Claude Code อัปเดตไฟล์นี้ด้วย `/update-status` ทุกครั้งที่จบ step
 
@@ -79,6 +79,7 @@ _(เติมหลัง Phase 5)_
 
 | # | ไฟล์ | รายละเอียด |
 |---|---|---|
+| K21 | `scripts/pipeline/sync_guid_from_export.py` (backup `.bak-20261104`) | 2026-11-04 bug fix: เขียนแค่ `_guid_map.json` แต่ builder (`reuse_guids`) อ่าน `_guid_keys.json` → `/sync-guid` ไม่มีผล build ถัดไปยังใช้ GlobalId เดิม → ODI-17591 · แก้: เขียน `_guid_keys.json` ด้วย key ของ builder (`guid_identities`) เมื่อชื่อ project/folder/package ตรง · dry-run แสดงจำนวนที่จะเปลี่ยน · เพิ่มเติม: builder เลือก reference ใหม่สุดใน `input/odi_reference/` → Smart Export หลัง import (ไม่มี SnpOrigTxt `trt_edit_cmd`) ทำ build หยุด → เก็บไว้ที่ `input/run_results/` แทน |
 | K17 | `scripts/pipeline/gen_ddl.py` (backup `.bak-20261029`) | 2026-10-29 bug fix: `load_existing_columns` อ่านแค่ `input/run_results/*/*.csv` ไม่อ่าน `input/oracle_ddl/*.csv` (all_tab_columns ที่ใช้ตอน preflight) → fallback VARCHAR2(4000) 56 คอลัมน์ · แก้ให้อ่านทั้งสองที่ → existing 112 · fallback 0 · V6 PASS · (2) `gen_ddl.py` unique index เฉพาะ strategy merge (050300 append ไม่ได้ UX_ บน CDR_ID แล้ว) · (3) `gen_dba_prereq.py` (backup `.bak-20261029`): นับ TRUNCATE ตรง ๆ (0 → 3: 010000/030000/090000) + แทน odiRef ก่อนหา external object (0 → 4) · ผลจาก ddl-dba-reviewer · generic → `/kit-backport` |
 | K15b | `scripts/pipeline/gen_design_docs.py` (backup `.bak-20261030`) | 2026-10-30: ใช้ช่อง `seq` ใน dml manifest แบบเดียวกับ builder (K15) → `.design/03_package_flow.md` เรียง 999999 ก่อน 090000 ตรงกับ package |
 | K16 | `scripts/checks/review_report.py` (backup `.bak-20261029`) | 2026-10-29 bug fix: ชื่อไฟล์แบบ `task_<hex>_<code>_…` ทำให้ `split('_')[0]` = `task` ทุกไฟล์ → flag/review ของ 040000/020000 ไปนับให้ทุก task และชั้น ⑤ หา procedure ใน XML ไม่เจอ (ชื่อใน XML ตัด `task_<hex>_` ออก) · แก้ให้ใช้ `task_<hex>` และชื่อ procedure · ผล: ⛔ 10 → ✅ 5 · 🟡 3 · ⛔ 2 · `--make-compile-pack` แทน `<%=odiRef.getSchemaName(...)%>` ด้วย `odi.work_user` (DSSDEV) ไม่งั้นคอมไพล์นอก ODI ไม่ได้ · generic → `/kit-backport` |
@@ -115,3 +116,4 @@ _(เติมหลัง Phase 5)_
 | 16 | 2026-10-30 | Intake ปิด I10 / I13 / I14 / I16 จากงานที่เสร็จแล้ว (I 17/17) · `.design/` regenerate ตามลำดับ K15 (K15b) |
 | 17 | 2026-10-30 | D1 บนเครื่อง (PySpark 4.2, seed เดียวกับ rp01, freeze now 2026-10-29 21:30 UTC, 12 combo) `output/d1/D1_REPORT.md`: 010000/020000/030000 STABLE · timeParserPolicy ไม่มีผลกับทุก task (ปิดแถว TO_TIMESTAMP เป็น NO_CHANGE) · **ansi=true → 040000 ล้มใน Spark** (CAST '' AS BIGINT — ไฟล์ไม่มีเลขรอบ) ส่วน Oracle ไม่ล้ม = ต่างกันถ้า Blendata เปิด ANSI · ansi=false: 040000 ขึ้นกับ escapedStringLiterals (Oracle = false/default) · ยอดแถว valid 7 / reject 13 / temp 6+1 ตรงกับ rp01 · สมมติฐาน: status.success / running เป็น boolean ใน Blendata · seed ต้อง type override · SPARK_HOME ในเครื่องผิด (ชี้ไฟล์ pyspark) ต้องตั้งเฉพาะคำสั่ง |
 | 18 | 2026-11-03 | Q15 = A (ยึด ansi=false + escapedStringLiterals=false · ตาม D1) ✅ SA · Q3 / I14 ยังค้าง (partitionOverwriteMode) · เก็บงานค้าง: commit D1 + ย้าย *.json.bak / snpstemp ไป registry/_trash · ของกลางแยก branch team/init-github |
+| 19 | 2026-11-04 | Smart Import รอบ 2 ล้ม ODI-17591 (`v_max_partition` already used): repository มี project / folder / package / procedure / step GlobalId ต่างจาก build (ตัวแปรตรง) → Smart Export จาก Studio (`input/run_results/import_r2_20261104/`) · K21 `sync_guid_from_export.py` เขียน `_guid_keys.json` (builder อ่านไฟล์นี้ ไม่ใช่ `_guid_map.json`) · rebuild: GlobalId ตรง repository 46/46 object หลัก · เนื้อหา XML ไม่เปลี่ยน (ต่างแค่ GlobalId/เวลา) · validator 0 error · G3 PASS · พบ procedure `000000_recover_landing_ss_esim` ค้างใน repository (จาก build รอบแรก ไม่อยู่ใน package) · รอ import ใหม่ (import-lock) |

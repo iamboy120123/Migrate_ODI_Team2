@@ -1,7 +1,7 @@
 -- ============================================================
 -- ODI Procedure Body: task_b045fc16dd1e4272a3a28795693c2291_040000_overwrite_ss_esim_raw_temp
 -- Target Table      : DSSDEV.TB_STAGING_SS_ESIM_RAW_TEMP
--- Generated         : 2026-10-29T18:11:04
+-- Generated         : 2026-11-04T09:34:09
 -- Strategy          : overwrite-by-partition (I14 delete_by_partition: PARTITION_DATE)
 -- Error Handling    : fail-fast
 -- ============================================================

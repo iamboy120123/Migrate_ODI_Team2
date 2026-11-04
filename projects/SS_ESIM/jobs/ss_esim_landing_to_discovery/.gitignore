@@ -5,3 +5,5 @@ __pycache__/
 # ผลรันจาก Oracle/ODI อาจมีข้อมูลจริง — ไม่ commit
 input/run_results/**/*.csv
 input/run_results/**/*.png
+# ODI Studio แตก zip ชั่วคราวตอน Smart Import (ไม่ใช่ผลงาน)
+output/odi_export/snpstemp_*/

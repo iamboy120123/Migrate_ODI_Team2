@@ -1,6 +1,6 @@
 # VERIFY REPORT — ss_esim_landing_to_discovery
 
-Generated: 2026-11-03 12:20:16 · `python scripts/checks/verify_all.py`
+Generated: 2026-11-04 09:38:09 · `python scripts/checks/verify_all.py`
 
 ## ✅ V1 Static
 
@@ -34,21 +34,24 @@ Generated: 2026-11-03 12:20:16 · `python scripts/checks/verify_all.py`
 
 ## ✅ V5 Runtime
 
-- ℹ️ Run Pack ล่าสุด: rp_import_check
+- ℹ️ Run Pack ล่าสุด: rp_g4_diag
 - ℹ️ ยังไม่มี REPORT.md (pack รอคนรัน)
 - ℹ️ assertions ล่าสุดมาจาก rp01_20261029
 - ✅ assertions PASS 55/55
 
-## ✅ V6 Schema / data contract
+## ⚠️ V6 Schema / data contract
 
 - ✅ DDL fallback VARCHAR2(4000) 0 คอลัมน์
 - ✅ target ใน DML มีใน DDL ครบ 8 ตาราง
+- ⚠️ DDL เก่ากว่า DML manifest — รัน gen_ddl.py ใหม่
 - ℹ️ ยังไม่มีผล all_tab_columns ของ landing/source ใน input/run_results/ (/preflight → P3)
 
 ## ⚠️ V7 Run Pack hygiene
 
-- ✅ Run Pack 5 ชุด 34 สคริปต์ + SQL ใน output/dba|backfill|ddl|validation: ไม่มี SET/SPOOL/EXEC/'/'
+- ✅ Run Pack 6 ชุด 35 สคริปต์ + SQL ใน output/dba|backfill|ddl|validation: ไม่มี SET/SPOOL/EXEC/'/'
 - ⚠️ rp_compile: ไม่มี README.md
+- ⚠️ rp_g4_diag: ไม่มี README.md
+- ⚠️ rp_g4_diag/D1_var_name_conflict.sql: 3 statement แต่ README ไม่บอก Execute Script (Alt+X)
 - ⚠️ rp_import_check: ไม่มี README.md
 
 ## ⚠️ V8 Traceability
@@ -64,4 +67,4 @@ Generated: 2026-11-03 12:20:16 · `python scripts/checks/verify_all.py`
 
 ## ✅ V12 Hook self-test
 
-- ✅ hook self-test 55 เคส ผ่านทั้งหมด
+- ✅ hook self-test 57 เคส ผ่านทั้งหมด
