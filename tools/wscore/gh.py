@@ -106,7 +106,8 @@ def log_action(desc: str, args: list[str]):
     p = C.REGISTRY / "github_actions.log"
     p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, "a", encoding="utf-8") as f:
-        f.write(f"{C.now_iso()}\t{C.git_user()}\t{desc}\tgh {' '.join(args)}\n")
+        cmd = " ".join(args).replace("\r", " ").replace("\n", " ⏎ ")   # K19: --body หลายบรรทัด = 1 บรรทัดใน log
+        f.write(f"{C.now_iso()}\t{C.git_user()}\t{desc}\tgh {cmd[:400]}\n")
 
 
 # ---------------------------------------------------------------- helpers

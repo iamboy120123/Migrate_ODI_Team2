@@ -199,7 +199,8 @@ def status_line(job_dir: Path):
 def print_github_actions(n: int = 3):
     """สิ่งที่เครื่องนี้เขียนขึ้น GitHub ล่าสุด (registry/github_actions.log · ทุกครั้งได้รับอนุญาตก่อน)"""
     p = C.REGISTRY / "github_actions.log"
-    lines = [l.split("\t") for l in C.read_text(p).splitlines() if l.strip()] if p.exists() else []
+    # K19: รายการเก่าที่ --body หลายบรรทัดหลุดเป็นหลายบรรทัด → เอาเฉพาะบรรทัดที่ขึ้นต้นด้วยเวลา
+    lines = [l.split("\t") for l in C.read_text(p).splitlines() if re.match(r"^\d{4}-\d\d-\d\dT", l)] if p.exists() else []
     if not lines:
         return
     print(f"\n   GitHub ล่าสุดจากเครื่องนี้ ({min(n, len(lines))} จาก {len(lines)} · ทุกครั้งได้รับอนุญาตก่อน):")
@@ -240,7 +241,7 @@ def run_report(args):
     L = [f"# STATUS — ทั้งทีม (สร้างโดย workspace.py report · {C.now_iso()} · {fresh})", "",
          "> ไฟล์นี้คำนวณใหม่ทุกครั้งจาก main + ทุก origin/job/* · ห้ามแก้มือ · ไม่ commit", "",
          "| งาน | wave | branch / ที่มา | ขั้น | คืบหน้า | รอใคร | ติดอะไร | SQL ✅/🟡/⛔ | เกรด | ความเร็ว | Q เปิด |", "|---|---|---|---|---|---|---|---|---|---|---|"]
-    qwait, lessons, imports = [], [], []
+    qwait, qpend, lessons, imports = [], [], [], []
     for v in rows:
         r = v["res"]
         if "error" in r:
@@ -248,25 +249,45 @@ def run_report(args):
             continue
         cur = r.get("current")
         sql = "/".join(str(x) for x in r["sql"]) if r.get("sql") else "–"
-        L.append(f"| {v['path'].split('/')[-1]} | {(v.get('meta') or {}).get('wave') or '-'} | {v['source']}{' · ⚠️ ไม่อัปเดต' if v.get('stale') else ''} | {cur['key'] if cur else 'จบ'} | {r['done']}/{r['total']} | "
-                 f"{(cur or {}).get('who') or '-'} | {('⛔ ' + r['blocked'][0]['note'][:50]) if r.get('blocked') else ((cur or {}).get('note') or '')[:50]} | {sql} | {r.get('grade') or '–'} | {r.get('speed') or '–'} | {len(r.get('open_q') or [])} |")
+        pq = r.get("pending_q") or []
+        warn = " · ⚠️ ผลตรวจเก่า" if any(x.get("key") == "verify" for x in r.get("reminders") or []) else ""
+        L.append(f"| {v['path'].split('/')[-1]} | {(v.get('meta') or {}).get('wave') or '-'} | {v['source']}{' · ⚠️ ไม่อัปเดต' if v.get('stale') else ''}{warn} | {cur['key'] if cur else 'จบ'} | {r['done']}/{r['total']} | "
+                 f"{(cur or {}).get('who') or '-'} | {('⛔ ' + r['blocked'][0]['note'][:50]) if r.get('blocked') else ((cur or {}).get('note') or '')[:50]} | {sql} | {r.get('grade') or '–'} | {r.get('speed') or '–'} | {len(r.get('open_q') or [])}{f' (+{len(pq)} ค้างค่า)' if pq else ''} |")
+        for q, t, w in pq:
+            qpend.append(f"| {v['path'].split('/')[-1]} | {q} | {t[:50]} | {w.replace('|', '/').replace('`', '')[:90]} |")
         for q, t in r.get("open_q") or []:
             qwait.append(f"| {v['path'].split('/')[-1]} | {q} | {t[:70]} |")
-        lt = C.read_text(Path(v["dir"]) / "knowledge/lessons-learned.md")
-        for m in re.finditer(r"^#+\s*(L\d+)[.:\s]+(.*)$", lt, re.M):
-            lessons.append((v["path"].split("/")[-1], m.group(1), m.group(2).strip()[:80]))
+        for k, cat, t in job_lessons(C.read_text(Path(v["dir"]) / "knowledge/lessons-learned.md")):
+            lessons.append((v["path"].split("/")[-1], k, (f"[{cat}] " if cat else "") + t))
         for l in C.read_text(Path(v["dir"]) / "status/IMPORT_LOG.md").splitlines():
             if l.startswith("| IMPORT"):
                 imports.append(f"{v['path'].split('/')[-1]}," + ",".join(c.strip() for c in l.strip().strip('|').split('|')[1:]))
     L += ["", "## คำถามที่รอผู้อนุมัติ", "", "| งาน | Q | เรื่อง |", "|---|---|---|"] + (qwait or ["| - | - | - |"])
+    L += ["", "## ตอบแล้วแต่ยังขาดค่าจริง (ต้องปิดก่อน G6)", "", "| งาน | Q | เรื่อง | ขาดอะไร |", "|---|---|---|---|"] + (qpend or ["| - | - | - | - |"])
     L += ["", "## บทเรียนล่าสุด (3 ข้อท้ายต่องาน)", ""] + [f"- {j} {k}: {t}" for j, k, t in _last3(lessons)] + ["", "## หมายเหตุ", "",
           "- ⚠️ ไม่อัปเดต = branch ไม่ได้ push เกิน 2 วันทำการ", "- ข้อมูลของ branch อื่นอ่านจาก origin โดยไม่ checkout · ทำงานนั้นต้องเปิดแชทที่โฟลเดอร์งาน"]
     C.write_text(C.ROOT / "STATUS.md", "\n".join(L) + "\n")
     from .jobs import write_registry
     write_registry()
     C.write_text(C.REGISTRY / "import_log.csv", "job,date,by,package,result,after_export,lock\n" + "\n".join(imports) + "\n")
-    C.write_text(C.REGISTRY / "lessons.csv", "job,id,title\n" + "\n".join(f"{j},{k},\"{t}\"" for j, k, t in lessons) + "\n")
+    C.write_text(C.REGISTRY / "lessons.csv", "job,id,title\n" + "\n".join(f"{j},{k},\"{t.replace(chr(34), chr(39))}\"" for j, k, t in lessons) + "\n")
     C.ok(f"เขียน STATUS.md ({len(rows)} งาน) + registry/ · {fresh}")
+
+
+def job_lessons(text: str) -> list[tuple[str, str, str]]:
+    """K19: บทเรียนของงาน [(L#, หมวด/ขั้น, ปัญหา)] — อ่านทั้งแบบตาราง `| L40 | 05 · run-pack | ปัญหา | … |` (รูปแบบของ /lesson)
+    และแบบหัวข้อ `### L40 …` · ถ้ามีหัวข้อ '## 2.' (บทเรียนของงานนี้) อ่านเฉพาะส่วนนั้น ไม่นับบทเรียนที่ kit ก๊อปมาให้ (§1)"""
+    m = re.search(r"^##\s*2\..*?$(.*?)(?=^##\s*\d|\Z)", text, re.M | re.S)
+    body = m.group(1) if m else text
+    out = []
+    for l in body.splitlines():
+        t = re.match(r"^\|\s*(L\d+)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|", l)
+        h = re.match(r"^#+\s*(L\d+)[.:\s]+(.*)$", l)
+        if t:
+            out.append((t.group(1), t.group(2), re.sub(r"[`*]", "", t.group(3))[:90]))
+        elif h:
+            out.append((h.group(1), "", h.group(2).strip()[:90]))
+    return out
 
 
 def _last3(lessons):
