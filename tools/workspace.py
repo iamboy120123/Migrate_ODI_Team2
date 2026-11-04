@@ -22,7 +22,8 @@ ODI_DEV
   wiki-check [--base main]   ตรวจ Wiki: หลักฐาน · ข้อมูลลับ · ไม่ลบประวัติ · อ้าง L#
   db-connect [--env SIT]     เพิ่ม / แก้การเชื่อมต่อฐาน (ไม่มีรหัสผ่านในไฟล์) แล้วทดสอบ
   update-target [--fetch-columns]  รับไฟล์ใหม่จาก shared/target/_incoming/ (ตรวจ → diff → archive → บอกงานที่กระทบ) · --fetch-columns = ดึงคอลัมน์จากฐานเอง
-  sync-kit [--job J | --all] [--force]   วาง kit + ของกลางลงงาน (หยุดถ้ามีการแก้ kit ค้าง)
+  sync-kit [--job J | --all] [--force] [--latest]   วาง kit + ของกลางลงงาน (หยุดถ้ามีการแก้ kit ค้าง · งานผ่าน G3 ได้ kit รุ่นที่ล็อก)
+  kit-base [--from-job J] [--untrack]   K18: สร้าง kit/job_base/ + .gitignore ไฟล์ kit ในงาน (หลัง clone ใช้ sync-kit --all)
   link-shared · slim-job · unslim --job J · fix-mtime
   kit-promote --job J        ส่งการแก้ kit ในงานกลับเข้า kit/ (PR แยก)
   extract-kit SETUP.ps1      เปลี่ยน kit/setup_migrate.ps1 เป็นรุ่นใหม่ (ต้อง backport CHANGES-ws ก่อน)
@@ -66,6 +67,8 @@ def build() -> argparse.ArgumentParser:
     p = sp.add_parser("update-target"); p.add_argument("--reason"); p.add_argument("--fetch-columns", action="store_true", help="ดึงคอลัมน์จากฐานเอง (ทีมอนุญาต AI ต่อฐาน)")
     for name in ("sync-kit", "link-shared", "slim-job"):
         p = sp.add_parser(name); p.add_argument("--job"); p.add_argument("--all", action="store_true"); p.add_argument("--force", action="store_true")
+    sp.choices["sync-kit"].add_argument("--latest", action="store_true", help="งานผ่าน G3: ใช้ kit ล่าสุดแทนรุ่นที่ล็อก")
+    p = sp.add_parser("kit-base"); p.add_argument("--from-job"); p.add_argument("--untrack", action="store_true")
     p = sp.add_parser("unslim"); p.add_argument("--job", required=True)
     sp.add_parser("fix-mtime")
     p = sp.add_parser("kit-promote"); p.add_argument("--job", required=True); p.add_argument("--k"); p.add_argument("--reason")
@@ -95,7 +98,7 @@ def main(argv=None):
         "db-connect": lambda x: __import__("wscore.db", fromlist=["db"]).run_db_connect(x),
         "update-target": lambda x: (C.require_workspace(), target.run_update_target(x)),
         "sync-kit": jobs.run_sync_kit, "link-shared": jobs.run_link_shared, "slim-job": jobs.run_slim, "unslim": jobs.run_unslim,
-        "fix-mtime": jobs.run_fix_mtime, "kit-promote": jobs.run_kit_promote, "extract-kit": jobs.run_extract_kit,
+        "fix-mtime": jobs.run_fix_mtime, "kit-base": jobs.run_kit_base, "kit-promote": jobs.run_kit_promote, "extract-kit": jobs.run_extract_kit,
         "status": status.run_status, "report": status.run_report, "check": check.run_check,
     }
     try:

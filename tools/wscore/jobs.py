@@ -18,6 +18,8 @@ SETUP = C.KIT / "setup_migrate.ps1"
 OVERLAY = C.KIT / "job"
 PATCHES = C.KIT / "patches"
 BASE_MANIFEST = C.KIT / "base_manifest.json"
+JOB_BASE = C.KIT / "job_base"          # K18: ไฟล์ kit ต้นฉบับ (ไม่เติมค่าต่องาน) ชุดเดียวของทั้งทีม — งานไม่ commit สำเนา
+GI_BEGIN, GI_END = "# >>> ws:kit-managed (K18 · สร้างโดย workspace.py kit-base · ห้ามแก้มือ)", "# <<< ws:kit-managed"
 CREATE_ONLY = {"status/DEPLOY_LOG.md", "status/IMPORT_LOG.md", "config/perf_baseline.json", "status/SQL_REVIEW.md"}
 TRACK_DIRS = ("scripts", ".claude/commands", ".claude/agents", ".claude/rules", ".claude/skills", ".claude/workflows", "knowledge/reference")
 IMPORT_MARK = "<!-- ws:imports -->"
@@ -371,21 +373,28 @@ def _tracked(job: Path, raw: bool = False) -> dict:
     return out
 
 
-def expected_files() -> dict:
-    """rel -> source Path ที่งานควรมี (Wiki ชั้น kit: kit/knowledge/reference → knowledge/reference · overlay ของ workspace ·
-    patches ที่ promote แล้ว ตามลำดับ)"""
+def expected_files(kit: Path | None = None) -> dict:
+    """rel -> source Path ที่งานควรมี ตามลำดับชั้น (ชั้นหลังทับชั้นก่อน): kit/job_base (K18 · ต้นฉบับจาก setup) ·
+    Wiki ชั้น kit: kit/knowledge/reference → knowledge/reference · overlay ของ workspace · patches ที่ promote แล้ว
+    kit = โฟลเดอร์ kit อื่น (เช่น kit รุ่นที่งานล็อกไว้ ดึงจาก git) · ค่าเริ่ม = kit/ ปัจจุบัน"""
+    kit = kit or C.KIT
+    overlay, patches, jbase = kit / "job", kit / "patches", kit / "job_base"
     out = {}
-    kref = C.KIT / "knowledge" / "reference"
+    if jbase.exists():
+        for f in jbase.rglob("*"):
+            if f.is_file() and "__pycache__" not in f.parts and not f.name.endswith(".pyc") and f != jbase / "README.md":
+                out[f.relative_to(jbase).as_posix()] = f
+    kref = kit / "knowledge" / "reference"
     templated = set(C.read_json(BASE_MANIFEST).get("templated", []))
     for f in kref.rglob("*.md") if kref.exists() else []:
         rel_ = "knowledge/reference/" + f.relative_to(kref).as_posix()
         if rel_ not in templated:
             out[rel_] = f
-    for f in OVERLAY.rglob("*"):
-        if f.is_file() and "__pycache__" not in f.parts:
-            out[f.relative_to(OVERLAY).as_posix()] = f
-    if PATCHES.exists():
-        for pdir in sorted(d for d in PATCHES.iterdir() if d.is_dir()):
+    for f in overlay.rglob("*") if overlay.exists() else []:
+        if f.is_file() and "__pycache__" not in f.parts and not f.name.endswith(".pyc"):
+            out[f.relative_to(overlay).as_posix()] = f
+    if patches.exists():
+        for pdir in sorted(d for d in patches.iterdir() if d.is_dir()):
             for f in (pdir / "files").rglob("*") if (pdir / "files").exists() else []:
                 if f.is_file():
                     out[f.relative_to(pdir / "files").as_posix()] = f
@@ -436,6 +445,7 @@ def probe_kit(quiet: bool = False):
     templated = sorted(k for k in fa if fb.get(k) != fa[k])
     files = {k: v for k, v in fa.items() if k not in templated}
     C.write_json(BASE_MANIFEST, {"setup_sha": C.sha256(SETUP), "date": C.today(), "templated": templated, "files": files})
+    write_job_base({k: probes[0] / k for k in files})
     # Wiki ชั้น kit: คู่มืออ้างอิงชุดกลาง (ไม่ทับของที่ทีมแก้แล้ว) — sync-kit วางลงทุกงานจากที่นี่
     kref = C.KIT / "knowledge" / "reference"
     for rel_ in files:
@@ -451,7 +461,51 @@ def probe_kit(quiet: bool = False):
         C.ok(f"สร้าง kit/base_manifest.json ({len(files)} ไฟล์ · เติมค่าต่องาน {len(templated)}) + kit/CLAUDE.job.md")
 
 
-def sync_one(job: Path, first: bool = False, force: bool = False):
+def kit_commit() -> str:
+    """commit ล่าสุดที่แตะ kit/ (K18: บันทึกใน .ws_kit.json ว่างานใช้ kit รุ่นไหน)"""
+    if not (C.ROOT / ".git").exists():
+        return ""
+    return C.git("log", "-1", "--format=%H", "--", "kit", check=False) or ""
+
+
+def pinned_kit(commit: str) -> Path | None:
+    """แตก kit/ ของ commit ที่งานล็อกไว้ไปที่ registry/_kit/<commit> (ไม่ commit) — ใช้กับงานที่ผ่าน G3"""
+    if not commit or not (C.ROOT / ".git").exists():
+        return None
+    dst = C.REGISTRY / "_kit" / commit[:12]
+    if (dst / "kit").exists():
+        return dst / "kit"
+    dst.mkdir(parents=True, exist_ok=True)
+    tar = dst / "kit.tar"
+    r = C.run(["git", "archive", "--format=tar", "-o", str(tar), commit, "kit"], cwd=C.ROOT, check=False)
+    if r.returncode != 0 or not tar.exists():
+        shutil.rmtree(dst, ignore_errors=True)
+        return None
+    import tarfile
+    with tarfile.open(tar) as t:
+        t.extractall(dst, filter="data") if hasattr(tarfile, "data_filter") else t.extractall(dst)
+    tar.unlink()
+    return dst / "kit"
+
+
+def kit_files_missing(job: Path) -> list[str]:
+    """ไฟล์ kit ที่ .ws_kit.json บอกว่างานควรมี แต่ยังไม่มีในเครื่อง (K18: เพิ่ง clone · ยังไม่ sync-kit)"""
+    man = C.read_json(job / ".ws_kit.json").get("files", {}) if (job / ".ws_kit.json").exists() else {}
+    return [k for k in man if not (job / k).exists()]
+
+
+def sync_one(job: Path, first: bool = False, force: bool = False, latest: bool = False):
+    prev = C.read_json(job / ".ws_kit.json") if (job / ".ws_kit.json").exists() else {}
+    lock = C.job_meta(job).get("target_lock") or {}
+    src_kit, pin = None, ""
+    if lock.get("locked_at_g3") and prev.get("kit_commit") and not latest and not first:
+        pin = prev["kit_commit"]
+        if pin != kit_commit():
+            src_kit = pinned_kit(pin)
+            if src_kit:
+                C.info(f"{C.rel(job)} ผ่าน G3 แล้ว → วาง kit รุ่นที่ล็อกไว้ ({pin[:10]}) · ใช้รุ่นล่าสุด = new-round หรือ --latest")
+            else:
+                C.warn(f"{C.rel(job)}: หา kit รุ่น {pin[:10]} ใน git ไม่เจอ (ยังไม่ fetch?) — ใช้ kit ปัจจุบัน")
     edits = [] if first else local_edits(job)
     if edits and not force:
         raise C.Stop(f"{C.rel(job)} มีการแก้ไฟล์ kit ค้างในงาน: {', '.join(edits[:6])} — ส่งเข้า kit ก่อนด้วย "
@@ -459,7 +513,7 @@ def sync_one(job: Path, first: bool = False, force: bool = False):
     if not BASE_MANIFEST.exists() or not (C.KIT / "CLAUDE.job.md").exists():
         probe_kit()
     stamp = _dt.datetime.now().strftime("%Y%m%d%H%M%S")
-    for rel_, src in expected_files().items():
+    for rel_, src in expected_files(src_kit).items():
         dst = job / rel_
         if rel_ in CREATE_ONLY and dst.exists():
             continue
@@ -472,7 +526,12 @@ def sync_one(job: Path, first: bool = False, force: bool = False):
     man = _tracked(job)
     for rel_ in CREATE_ONLY:
         man.pop(rel_, None)
-    C.write_json(job / ".ws_kit.json", {"workspace_version": C.WS_VERSION, "synced_at": C.now_iso(), "files": man})
+    want = prev.get("files", {})
+    drift = [k for k, v in want.items() if k in man and man[k] != v] if (src_kit or pin) else []
+    if drift:
+        C.warn(f"{C.rel(job)}: ไฟล์ kit {len(drift)} ไฟล์ไม่ตรงกับที่บันทึกตอนล็อก (เช่น {drift[0]}) — ตรวจก่อนรันซ้ำ")
+    C.write_json(job / ".ws_kit.json", {"workspace_version": C.WS_VERSION, "synced_at": C.now_iso(),
+                                        "kit_commit": (pin if src_kit else kit_commit()) or prev.get("kit_commit", ""), "files": man})
     C.ok(f"sync-kit {C.rel(job)}")
 
 
@@ -611,13 +670,100 @@ def run_sync_kit(args):
     bad = []
     for j in jobs:
         try:
-            sync_one(j, force=args.force)
+            sync_one(j, force=args.force, latest=getattr(args, "latest", False))
         except C.Stop as e:
             bad.append(str(e))
             C.fail(str(e))
     write_registry()
     if bad:
         raise C.Stop(f"sync ไม่ครบ {len(bad)} งาน — งานที่เหลือ sync แล้ว")
+
+
+def write_job_base(src: dict):
+    """เขียน kit/job_base/ ใหม่ทั้งชุดจาก {rel: Path} (K18)"""
+    shutil.rmtree(JOB_BASE, ignore_errors=True)
+    for rel_, f in src.items():
+        C.copy_file(f, JOB_BASE / rel_)
+    C.write_text(JOB_BASE / "README.md", "# kit/job_base — ไฟล์ kit ต้นฉบับของทุกงาน (K18)\n\n"
+                 "สร้างโดย `workspace.py kit-base` / `sync-kit` (probe จาก setup_migrate.ps1) · ตรงกับ sha ใน `kit/base_manifest.json` · "
+                 "**ห้ามแก้มือ** — แก้ด้วย `kit-promote` (kit/patches/) แล้ว backport เข้า setup\n\n"
+                 "งานไม่ commit สำเนาของไฟล์เหล่านี้ (ดู .gitignore ช่วง ws:kit-managed) · หลัง clone: `workspace.py sync-kit --all`\n")
+
+
+def gitignore_block() -> str:
+    """pattern ของไฟล์ kit ในงานที่ไม่ commit — ไฟล์ templated (เติมค่าต่องาน) ยัง commit ตามเดิม"""
+    templated = C.read_json(BASE_MANIFEST).get("templated", [])
+    lines = [GI_BEGIN]
+    for d in TRACK_DIRS:
+        mine = [t for t in templated if t.startswith(d + "/")]
+        if mine:
+            lines += [f"projects/*/jobs/*/{d}/**", f"!projects/*/jobs/*/{d}/**/"] + [f"!projects/*/jobs/*/{t}" for t in mine]
+        else:
+            lines.append(f"projects/*/jobs/*/{d}/")
+    return "\n".join(lines + [GI_END]) + "\n"
+
+
+def write_gitignore_block() -> bool:
+    gi = C.ROOT / ".gitignore"
+    t = C.read_text(gi) if gi.exists() else ""
+    new = gitignore_block()
+    if GI_BEGIN in t:
+        t2 = re.sub(re.escape(GI_BEGIN) + r".*?" + re.escape(GI_END) + r"\n?", lambda _: new, t, flags=re.S)
+    else:
+        t2 = t.rstrip("\n") + "\n\n" + new
+    if t2 != t:
+        C.write_text(gi, t2)
+        return True
+    return False
+
+
+def run_kit_base(args):
+    """K18: สร้าง kit/job_base/ (ต้นฉบับไฟล์ kit ของงาน) + ช่วง .gitignore · ตรวจ sha กับ kit/base_manifest.json ทุกไฟล์
+    --from-job J = เอาจากงานที่มีอยู่ (ใช้ไฟล์ *.bak-* ถ้าไฟล์ในงานถูกแก้) — ไม่ต้องมี PowerShell
+    ไม่ใส่ --from-job = probe จาก setup_migrate.ps1 (ต้องมี PowerShell)"""
+    C.require_workspace()
+    if not args.from_job:
+        probe_kit()
+    else:
+        base = C.read_json(BASE_MANIFEST).get("files", {})
+        if not base:
+            raise C.Stop("ไม่มี kit/base_manifest.json — รัน sync-kit บนเครื่องที่มี PowerShell ก่อน")
+        j = C.job_by_name(args.from_job)
+        src, miss = {}, []
+        for rel_, sha in base.items():
+            cands = [j / rel_] + sorted(j.glob(rel_ + ".bak-*"))
+            hit = next((f for f in cands if f.exists() and C.sha_text(f) == sha), None)
+            (src.__setitem__(rel_, hit) if hit else miss.append(rel_))
+        covered = set(expected_files())          # ไฟล์ที่ overlay / kit/knowledge/reference / patches ทับอยู่แล้ว ไม่ต้องมีต้นฉบับ
+        if miss and all(m in covered for m in miss):
+            C.info(f"{len(miss)} ไฟล์ไม่มีต้นฉบับในงาน แต่มีชั้น kit/job · kit/knowledge/reference · patches ทับอยู่แล้ว — ข้ามได้ (probe บน PowerShell ภายหลังจะเติมให้ครบ)")
+            miss = []
+        if miss:
+            raise C.Stop(f"หาต้นฉบับไม่ครบ {len(miss)} ไฟล์ (เช่น {miss[0]}) — ใช้ kit-base โดยไม่ใส่ --from-job บนเครื่องที่มี PowerShell")
+        write_job_base(src)
+    n = sum(1 for f in JOB_BASE.rglob("*") if f.is_file() and f != JOB_BASE / "README.md")
+    C.ok(f"kit/job_base/ {n} ไฟล์ (ตรง sha ของ base_manifest)")
+    if write_gitignore_block():
+        C.ok("เพิ่มช่วง ws:kit-managed ใน .gitignore")
+    jobs_ = C.job_dirs()
+    edits = {j.name: local_edits(j) for j in jobs_}
+    edits = {k: v for k, v in edits.items() if v}
+    if edits:
+        C.warn("งานที่ยังมีการแก้ไฟล์ kit ค้าง (ต้อง kit-promote ก่อนเลิก commit สำเนา ไม่งั้นการแก้หาย): " + " · ".join(f"{k} ({len(v)})" for k, v in edits.items()))
+    C.info("ขั้นต่อไป: kit-promote งานที่มีการแก้ค้าง → git rm -r --cached <ไฟล์ kit ของงาน> (ระบบบอกคำสั่งด้วย --untrack) → commit ใน PR ของ kit")
+    if getattr(args, "untrack", False):
+        if edits:
+            raise C.Stop("ยังมีการแก้ kit ค้าง — kit-promote ก่อน แล้วรัน --untrack ใหม่")
+        for j in jobs_:
+            for d in TRACK_DIRS:
+                if (j / d).exists():
+                    C.git("rm", "-r", "-q", "--cached", "--ignore-unmatch", "--", str(j / d), check=False)
+            tmpl = C.read_json(BASE_MANIFEST).get("templated", [])
+            for t in tmpl:
+                if (j / t).exists():
+                    C.git("add", "-f", "--", str(j / t), check=False)
+        C.git("add", "--", ".gitignore", str(JOB_BASE), check=False)
+        C.ok("เลิก track สำเนาไฟล์ kit ในงานแล้ว (ไฟล์ในเครื่องยังอยู่) — ตรวจ git status แล้ว commit")
 
 
 def run_link_shared(args):
