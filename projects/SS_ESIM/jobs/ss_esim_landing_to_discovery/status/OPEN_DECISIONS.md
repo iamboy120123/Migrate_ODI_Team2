@@ -13,7 +13,7 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] A) ระบุ: ____ วัน
 - [x] B) ยังไม่ทราบ — ต้องถามทีม ingestion
 
-> **Q1 = B** ✅ SA 2026-10-29 (ตอบในแชต) · ไม่มี task ใน workflow ตั้ง retention ของ landing (มีแค่ 080000 บน raw_temp) → retention อยู่ฝั่งระบบที่เติม landing · **ค้าง:** จำนวนวันจากทีม ingestion — ต้องได้ก่อน G7 (G7.M1 backfill / rollback point of no return)
+> **Q1 = B** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · ไม่มี task ใน workflow ตั้ง retention ของ landing (มีแค่ 080000 บน raw_temp) → retention อยู่ฝั่งระบบที่เติม landing · **ค้าง:** จำนวนวันจากทีม ingestion — ต้องได้ก่อน G7 (G7.M1 backfill / rollback point of no return)
 
 ### Q2. Fail-fast เมื่อ landing ค้าง
 ต้องการให้ package หยุดเมื่อ lag > 120 นาทีหรือไม่ (ต้องมี Evaluate Variable sample จาก Studio)
@@ -21,7 +21,7 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [x] A) ต้องการ **[แนะนำ]**
 - [ ] B) ไม่ต้อง — รันต่อแม้ landing ค้าง
 
-> **Q2 = A (fail-fast เมื่อ `v_lag_minutes` > 120)** ✅ SA 2026-10-29 (ตอบในแชต) · ต้องได้ sample Evaluate Variable step จาก ODI Studio ก่อน `/gen-export` · เกณฑ์ 120 นาที (`precheck.landing_max_lag_minutes`) ทบทวนกับ pattern การมาของ landing จริง (ช่วงกลางคืน / วันหยุด)
+> **Q2 = A (fail-fast เมื่อ `v_lag_minutes` > 120)** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · ต้องได้ sample Evaluate Variable step จาก ODI Studio ก่อน `/gen-export` · เกณฑ์ 120 นาที (`precheck.landing_max_lag_minutes`) ทบทวนกับ pattern การมาของ landing จริง (ช่วงกลางคืน / วันหยุด)
 
 ### Q3. Spark config ของ Blendata (มีผลต่อความหมายของ SQL)
 ข้อเท็จจริง (จากโปรเจกต์ก่อน): ค่าเหล่านี้ทำให้ผลของ SQL เดียวกันต่างกัน — `ansi.enabled` (CAST ที่แปลงไม่ได้ = error แทน NULL), `legacy.timeParserPolicy` (EXCEPTION ทำให้ workflow ล้มทั้งรอบเมื่อเจอวันที่ผิดรูป), `parser.escapedStringLiterals` (false = backslash ใน regex literal ถูกตัด → regex อาจไม่ match)
@@ -30,7 +30,7 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] A) ได้ค่าครบแล้ว **[แนะนำ — ต้องมีก่อนปิด Phase 4]**
 - [x] B) ยังขอไม่ได้ — D1 (PySpark) รันทุกค่าที่เป็นไปได้ และถือว่ากฎถูกเฉพาะเมื่อผลตรงกันทุกแบบ
 
-> **Q3 = B (ยังขอค่าไม่ได้)** ✅ SA 2026-10-29 (ตอบในแชต) · ผลกระทบ: D1 (PySpark) ต้องรันทุกค่าที่เป็นไปได้ · ยังต้องได้ค่าจริงก่อนปิด G2 (Phase 4) · `partitionOverwriteMode` ไม่ทราบ → I14 (DELETE เฉพาะ partition / ล้างทั้งตาราง) ของ 3 ตารางที่ sink = Overwrite + partitionBy(`partition_date`) ยังตัดสินไม่ได้: `tb_staging_ss_esim_checkpoint_temp` (020000) · `tb_staging_ss_esim_raw_temp` (040000) · `tb_staging_ss_esim_checkpoint` (070000)
+> **Q3 = B (ยังขอค่าไม่ได้)** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · ผลกระทบ: D1 (PySpark) ต้องรันทุกค่าที่เป็นไปได้ · ยังต้องได้ค่าจริงก่อนปิด G2 (Phase 4) · `partitionOverwriteMode` ไม่ทราบ → I14 (DELETE เฉพาะ partition / ล้างทั้งตาราง) ของ 3 ตารางที่ sink = Overwrite + partitionBy(`partition_date`) ยังตัดสินไม่ได้: `tb_staging_ss_esim_checkpoint_temp` (020000) · `tb_staging_ss_esim_raw_temp` (040000) · `tb_staging_ss_esim_checkpoint` (070000)
 
 ### Q4. Data contract ของ landing `tb_landing_ss_esim`
 ข้อเท็จจริง: landing ใน Oracle ที่ Spark JDBC สร้างมักมีชนิดต่างจาก Blendata (เช่น timestamp = TIMESTAMP(6), string = VARCHAR2(255), partition = NUMBER(19)) — กฎแปลงขึ้นกับชนิดจริง
@@ -38,7 +38,7 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] B) กำหนด DDL landing ใหม่เอง (ต้องแจ้งทีมที่เติม landing)
 - ผู้เติม landing ใน Prod: ____
 
-> **Q4 = A** ✅ SA 2026-10-29 (ตอบในแชต) · ชนิดจริง DEV: `FIRST_INSTALLED` VARCHAR2(100) (ใช้ใน `date_format(first_installed,'yyyyMMdd')` ของ 050100 / 050300 → ต้องรู้รูปแบบข้อความวันที่จริงเพื่อเขียน `TO_DATE` แบบ FX) · `PROCESS_DATE` TIMESTAMP(6) · `PARTITION_DATE/HOUR/MINUTE` NUMBER(19) · `RAW_DATA` CLOB · **ค้าง:** ผล `DESCRIBE tb_landing_ss_esim` จาก Blendata (ขอก่อน `/review-sql`) · ผู้เติม landing ใน Prod (ก่อน G6.M3) · คอลัมน์ที่ชนิดไม่ตรง → GAP แยกรายคอลัมน์
+> **Q4 = A** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · ชนิดจริง DEV: `FIRST_INSTALLED` VARCHAR2(100) (ใช้ใน `date_format(first_installed,'yyyyMMdd')` ของ 050100 / 050300 → ต้องรู้รูปแบบข้อความวันที่จริงเพื่อเขียน `TO_DATE` แบบ FX) · `PROCESS_DATE` TIMESTAMP(6) · `PARTITION_DATE/HOUR/MINUTE` NUMBER(19) · `RAW_DATA` CLOB · **ค้าง:** ผล `DESCRIBE tb_landing_ss_esim` จาก Blendata (ขอก่อน `/review-sql`) · ผู้เติม landing ใน Prod (ก่อน G6.M3) · คอลัมน์ที่ชนิดไม่ตรง → GAP แยกรายคอลัมน์
 
 ### Q5. Schedule และ timezone
 ข้อเท็จจริง: Airflow ใช้ **UTC** เป็น default ถ้า DAG ไม่กำหนด timezone · SQL มักใช้ `SYSDATE` (เวลาของ DB server)
@@ -48,7 +48,7 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
   - [ ] B) Load Plan
   - [ ] C) scheduler ภายนอก (`startscen`) — ระบุ: ____
 
-> **Q5 = A (Scenario + ODI Agent schedule `30 * * * *` + Limit Concurrent Executions = 1)** ✅ SA 2026-10-29 (ตอบในแชต) · cron เดิมจาก `export_workflow.json` `scheduleTime` = `30 * * * *` (ทุกชั่วโมง นาทีที่ 30) · **ค้าง:** timezone ของ DAG/Blendata (`session.timeZone` — Q3) เทียบ `DBTIMEZONE` / `SESSIONTIMEZONE` ของ Oracle Dev/Prod เพราะ `workflow_process_date` = `now()` → `SYSDATE`
+> **Q5 = A (Scenario + ODI Agent schedule `30 * * * *` + Limit Concurrent Executions = 1)** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · cron เดิมจาก `export_workflow.json` `scheduleTime` = `30 * * * *` (ทุกชั่วโมง นาทีที่ 30) · **ค้าง:** timezone ของ DAG/Blendata (`session.timeZone` — Q3) เทียบ `DBTIMEZONE` / `SESSIONTIMEZONE` ของ Oracle Dev/Prod เพราะ `workflow_process_date` = `now()` → `SYSDATE`
 
 ### Q6. แจ้งเตือนและ recovery
 ข้อเท็จจริง: task recover ของ Blendata (ถ้ามี) มักถูก exclude · ODI KO path แจ้งเตือนได้เฉพาะเมื่อ session เริ่มแล้ว (Agent ล่ม = เงียบ)
@@ -56,7 +56,7 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [x] A) OdiSendMail ใน KO path + runbook "Restart session เดิม" + missing-run check จากภายนอก **[แนะนำ]**
 - [ ] B) monitoring ภายนอกอ่าน `SNP_SESSION` อย่างเดียว
 
-> **Q6 = A** ✅ SA 2026-10-29 (ตอบในแชต) · As-Is: Blendata ปิดการแจ้งเตือนทุก task (`notifiedRunFailed*: false` ใน `export_workflow.json`) → To-Be เพิ่ม alert = GAP-04 (M) · **ค้าง:** SMTP host / ผู้ส่ง / ผู้รับ WARNING / CRITICAL · ระบบ missing-run check นอก ODI
+> **Q6 = A** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · As-Is: Blendata ปิดการแจ้งเตือนทุก task (`notifiedRunFailed*: false` ใน `export_workflow.json`) → To-Be เพิ่ม alert = GAP-04 (M) · **ค้าง:** SMTP host / ผู้ส่ง / ผู้รับ WARNING / CRITICAL · ระบบ missing-run check นอก ODI
 > 2026-10-29: SA ขอข้ามค่าการส่ง mail ไปก่อน → build ใส่ OdiSendMail แบบ placeholder (ค่า SMTP / ผู้รับ = TBD) · **ต้องได้ค่าจริงก่อน G4 (Smart Import)**
 
 ### Q7. Work repository
@@ -64,7 +64,7 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - schema ของ work repo (Dev): `DSSDEV` · (Prod): ยังไม่ทราบ · user ที่มีสิทธิ์ SELECT: `SYSTEM`
 - [x] A) กรอกครบแล้ว (ใส่ `odi.work_repo_schema` ใน config ด้วย) — บางส่วน
 
-> **Q7 (บางส่วน)** ✅ SA 2026-10-29 (ตอบในแชต) · config `odi.work_repo_schema = "DSSDEV"` · **ข้อสังเกต:** (1) work repo อยู่ schema เดียวกับตารางงาน (`DSSDEV`) → DDL / cleanup ของงานต้องไม่แตะ `SNP_*` · (2) user ที่ query `SNP_*` = `SYSTEM` — ขัดกับ G6.M4 (Prod ห้ามใช้ user system) และไม่ควรใช้กับ Run Pack · แนะนำขอ DBA grant SELECT บน `DSSDEV.SNP_*` ให้ user read-only ของทีม · **ค้าง:** schema work repo ของ Prod (ก่อน G6)
+> **Q7 (บางส่วน)** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · config `odi.work_repo_schema = "DSSDEV"` · **ข้อสังเกต:** (1) work repo อยู่ schema เดียวกับตารางงาน (`DSSDEV`) → DDL / cleanup ของงานต้องไม่แตะ `SNP_*` · (2) user ที่ query `SNP_*` = `SYSTEM` — ขัดกับ G6.M4 (Prod ห้ามใช้ user system) และไม่ควรใช้กับ Run Pack · แนะนำขอ DBA grant SELECT บน `DSSDEV.SNP_*` ให้ user read-only ของทีม · **ค้าง:** schema work repo ของ Prod (ก่อน G6)
 
 ---
 
@@ -77,7 +77,7 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] B) `schema_mode = literal` (ค่าตั้งต้น) — hardcode `target_table_prefix` (เช่น `dssdev.`) · check_sql ผ่าน แต่ V3 FAIL และต้อง build ใหม่เมื่อ Prod ใช้ schema อื่น
 - [ ] C) ไม่ qualify (ชื่อตารางเปล่า) — **kit 2.8.x ไม่รองรับ**: `convert_sql.py` / `check_inputs.py` หยุดเมื่อ prefix ว่าง → ต้องแก้ kit (K#) + บังคับ data server login = owner ทุก environment (G4.M2, G6.M4) + waiver D-R2 ใน `status/GATES.md`
 
-> **Q8 ปิดแล้ว: A (`schema_mode = odiref`)** ✅ SA 2026-10-29 (ตอบในแชต) · ผล: `config.json` `schema_mode=odiref` + refresh_query ของ v_max_partition / v_lag_minutes ใช้ `<%=odiRef.getSchemaName("DSS_ODI_LOG","D")%>.` · ไม่ต้อง waiver D-R2
+> **Q8 ปิดแล้ว: A (`schema_mode = odiref`)** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · ผล: `config.json` `schema_mode=odiref` + refresh_query ของ v_max_partition / v_lag_minutes ใช้ `<%=odiRef.getSchemaName("DSS_ODI_LOG","D")%>.` · ไม่ต้อง waiver D-R2
 
 ---
 
@@ -89,7 +89,7 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] B) step จริงไป SQL Server ในรอบนี้ (ต้องเพิ่ม data server SQL Server ใน Topology + รู้ที่อยู่ตาราง checkpoint `ext_dss_…`)
 - [ ] C) ไม่ย้ายมา ODI — ระบบอื่นส่งแทน (ต้องมี business ยืนยันผู้รับผิดชอบ)
 
-> **Q9 = A (placeholder)** ✅ SA 2026-10-29 (ตอบในแชต) · ทำตอน `/gen-export`: entry `manual: true` ใน `output/dml/_manifest.json` (ไม่มี target_table) · **ค้าง (ต้องปิดก่อน G6):** วิธี export จริง + data server SQL Server + ที่อยู่ตาราง checkpoint `ext_dss_checkpoint_tb_transaction_ss_esim_valid` + ผู้ใช้ข้อมูลฝั่ง SQL Server / ผลกระทบถ้าข้อมูลขาดช่วง
+> **Q9 = A (placeholder)** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · ทำตอน `/gen-export`: entry `manual: true` ใน `output/dml/_manifest.json` (ไม่มี target_table) · **ค้าง (ต้องปิดก่อน G6):** วิธี export จริง + data server SQL Server + ที่อยู่ตาราง checkpoint `ext_dss_checkpoint_tb_transaction_ss_esim_valid` + ผู้ใช้ข้อมูลฝั่ง SQL Server / ผลกระทบถ้าข้อมูลขาดช่วง
 
 ### Q10. Cleanup ตารางพัก (task `080000_cleanup_ss_esim_raw_temp`)
 ข้อเท็จจริง: Blendata `service-job-table-retention` บน `tb_staging_ss_esim_raw_temp` ตั้ง `olderThan: -1` · step ที่อ่าน raw_temp (050100–050300) รันก่อน 080000 ทั้งหมด · raw_temp แบ่ง partition ตาม `partition_date` (`config/partitions_check.csv`) → TRUNCATE ทั้งตารางติด P4
@@ -97,14 +97,14 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] B) placeholder จนกว่า Blendata ยืนยันความหมายของ `-1`
 - [ ] C) TRUNCATE (ต้อง waiver P4)
 
-> **Q10 = A (DELETE ทั้งตาราง ตอนจบรอบ)** ✅ SA 2026-10-29 (ตอบในแชต) · ทำตอน `/gen-export`: entry non-SQL ของ 080000 ใน `output/dml/_manifest.json` · สมมติฐาน: `olderThan: -1` = ล้างทั้งหมด — **ยืนยันกับทีม Blendata ก่อน G6** · เฝ้าดูเวลา DELETE ใน Dev run (ถ้าช้าเกิน batch window → พิจารณา C + waiver)
+> **Q10 = A (DELETE ทั้งตาราง ตอนจบรอบ)** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · ทำตอน `/gen-export`: entry non-SQL ของ 080000 ใน `output/dml/_manifest.json` · สมมติฐาน: `olderThan: -1` = ล้างทั้งหมด — **ยืนยันกับทีม Blendata ก่อน G6** · เฝ้าดูเวลา DELETE ใน Dev run (ถ้าช้าเกิน batch window → พิจารณา C + waiver)
 
 ### Q11. Retry ของ step เมื่อล้ม
 ข้อเท็จจริง: `export_workflow.json` ทุก task `retry: true`, `retryRound: 2`, `retryDelay: 1 minutes` ยกเว้น `999999_export_data_to_mssql` (`retry: false`) · kit `error_handling: fail-fast`
 - [x] A) ตั้งเหมือน Blendata: ทุก step ใน package Number of attempts on failure = 2, Time between attempts = 60 วินาที แล้วค่อยไป KO path **[แนะนำ]**
 - [ ] B) ไม่ retry — ล้มครั้งแรกหยุดทันที
 
-> **Q11 = A (retry 2 ครั้ง × 60 วินาที ทุก step)** ✅ SA 2026-10-29 (ตอบในแชต) · ยกเว้น: placeholder 999999 (Blendata ไม่ retry) และ Evaluate Variable ของ lag precheck (Q2 — หยุดทันที ไม่ retry) · เงื่อนไข: แต่ละ step ต้อง idempotent / commit ครั้งเดียวตอนจบ — ตรวจใน `/review-sql` (Phase 4)
+> **Q11 = A (retry 2 ครั้ง × 60 วินาที ทุก step)** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · ยกเว้น: placeholder 999999 (Blendata ไม่ retry) และ Evaluate Variable ของ lag precheck (Q2 — หยุดทันที ไม่ retry) · เงื่อนไข: แต่ละ step ต้อง idempotent / commit ครั้งเดียวตอนจบ — ตรวจใน `/review-sql` (Phase 4)
 > 2026-10-29: SA ให้เลื่อน retry ไปหลังรอบพื้นฐาน (pre-delivery ข้อ 5) · build รอบ 1 ไม่มี retry (builder ไม่รองรับ + reference ไม่มีตัวอย่าง `KoRetry`) · หลังรอบพื้นฐานผ่าน: SA ตั้ง retry 1 step ใน `ZZ_REF` → Smart Export → K# builder (retry) → import Overwrite
 
 ### Q12. Guard ของรอบที่ล้มกลางทาง (I15)
@@ -112,14 +112,14 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [x] A) As-Is ทุกอย่าง + บันทึก GAP-01 ให้ business รับทราบ · แก้เป็นรอบปรับปรุงแยก **[แนะนำ]**
 - [ ] B) แก้ตอนย้าย (ลบ `workflow_process_date` ที่ค้างก่อน append / หยุดเมื่อรอบก่อน running)
 
-> **Q12 = A (As-Is)** ✅ SA 2026-10-29 (ตอบในแชต) · GAP-01 disposition A · ต้องมี test case ล้มกลางทางใน Run Pack (G5)
+> **Q12 = A (As-Is)** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · GAP-01 disposition A · ต้องมี test case ล้มกลางทางใน Run Pack (G5)
 
 ### Q13. ค่าของ `create_by` (`get_user()` ใน Spark)
 ข้อเท็จจริง: Spark `get_user()` = user ของ Blendata ที่รัน workflow · converted ใช้ `USER` ของ Oracle = login ของ Data Server ที่ ODI ใช้ (`DSSDEV`) · คอลัมน์นี้ถูกเขียนใน 040000, 050100, 050200, 050300, 999999 (raw SQL) · ที่มา: `/review-sql` รอบ 1, conversion-auditor
 - [x] A) `USER` (login ของ ODI) — บันทึกเป็น known diff ใน parity test **[แนะนำ]**
 - [ ] B) ค่าคงที่เท่ากับ user ของ Blendata เดิม (ต้องหาค่าจริงก่อน)
 
-> **Q13 = A (`USER` = login ของ ODI)** ✅ SA 2026-10-29 (ตอบในแชต) · ผล: Phase 7 ไม่เทียบคอลัมน์ `create_by` (known diff) · ไม่ต้องแก้ converted SQL
+> **Q13 = A (`USER` = login ของ ODI)** ✅ SA 2026-10-29 @iamboy120123 (ตอบในแชต) · ผล: Phase 7 ไม่เทียบคอลัมน์ `create_by` (known diff) · ไม่ต้องแก้ converted SQL
 
 ### Q14. ความยาวคอลัมน์ปลายทางสั้นกว่าต้นทาง (ก่อน G6)
 ข้อเท็จจริง (ddl-dba-reviewer, `/gen-ddl` 2026-10-29 · ชนิดจาก `input/oracle_ddl/_shared_all_tab_columns.csv`): ค่าที่ยาวเกิน = `ORA-12899` step ล้ม (fail-fast)
@@ -139,4 +139,4 @@ landing `tb_landing_ss_esim` เก็บย้อนหลังกี่วั
 - [ ] B) ยึด `ansi = true` — แก้ Oracle ให้ล้มแบบเดียวกับ Spark (ทำซ้ำพฤติกรรมล้มของต้นทาง)
 - [ ] C) ไม่ยึดค่าใด — รอค่าจริงจาก Blendata (G5 / W1 ค้างต่อ)
 
-> **Q15 = A (ยึด `ansi = false` + `escapedStringLiterals = false`)** ✅ SA 2026-11-03 (ตอบในแชต) · ผล: เทียบผล D1 combo `enabled=false-*-escapedStringLiterals=false` กับ Oracle (G5) · known risk บันทึกใน HANDOVER: ถ้า Blendata จริงเปิด ANSI → ต้นทางล้มเมื่อชื่อไฟล์ไม่มีเลขรอบ แต่ ODI ทำต่อ · ถ้า `escapedStringLiterals = true` → ข้อความ type_error ใน reject ต่าง · ไม่ปลด Q3 / I14 (`partitionOverwriteMode` ยังไม่ทราบ — ยังต้องได้ค่าจริงก่อนปิด G2)
+> **Q15 = A (ยึด `ansi = false` + `escapedStringLiterals = false`)** ✅ SA 2026-11-03 @iamboy120123 (ตอบในแชต) · ผล: เทียบผล D1 combo `enabled=false-*-escapedStringLiterals=false` กับ Oracle (G5) · known risk บันทึกใน HANDOVER: ถ้า Blendata จริงเปิด ANSI → ต้นทางล้มเมื่อชื่อไฟล์ไม่มีเลขรอบ แต่ ODI ทำต่อ · ถ้า `escapedStringLiterals = true` → ข้อความ type_error ใน reject ต่าง · ไม่ปลด Q3 / I14 (`partitionOverwriteMode` ยังไม่ทราบ — ยังต้องได้ค่าจริงก่อนปิด G2)
