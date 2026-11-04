@@ -87,6 +87,12 @@ def run_check(args):
             le = []
         if le:
             warns.append(f"{name}: แก้ไฟล์ kit ค้างในงาน {len(le)} ไฟล์ (เช่น {le[0]}) — kit-promote")
+        if J.JOB_BASE.exists():   # K18: สำเนาไฟล์ kit ไม่ขึ้น Git → การแก้ค้างหายเมื่อคนอื่น clone · ไม่ได้ sync = hook / คำสั่งใช้ไม่ได้
+            if le and not args.ci:
+                errs.append(f"{name}: แก้ไฟล์ kit ค้าง {len(le)} ไฟล์ แต่ไฟล์ kit ไม่ขึ้น Git (K18) — kit-promote ก่อน push")
+            miss = J.kit_files_missing(j) if not args.ci else []
+            if miss:
+                warns.append(f"{name}: ยังไม่ได้วางไฟล์ kit {len(miss)} ไฟล์ (เพิ่ง clone?) — `workspace.py sync-kit --job {j.name}`")
     # ---- เลขชนกับงานบน branch อื่นที่ fetch มาแล้ว (ในเครื่องเท่านั้น · CI เห็นแค่ PR ของตัวเอง)
     if not args.ci:
         from .status import remote_jobs

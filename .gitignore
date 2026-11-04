@@ -1,6 +1,6 @@
 # สร้างโดย workspace.py init — ไฟล์ที่สร้างใหม่ได้เสมอ / ข้อมูลอ่อนไหว ไม่ขึ้น Git
 registry/
-STATUS.md
+/STATUS.md
 shared/db.local.json
 shared/.init_answers.json
 shared/target/_incoming/*
@@ -15,3 +15,17 @@ projects/*/jobs/*/.claude/settings.local.json
 **/_pyc/
 *.pyc
 *.bak-*
+
+# >>> ws:kit-managed (K18 · สร้างโดย workspace.py kit-base · ห้ามแก้มือ)
+projects/*/jobs/*/scripts/
+projects/*/jobs/*/.claude/commands/
+projects/*/jobs/*/.claude/agents/
+projects/*/jobs/*/.claude/rules/**
+!projects/*/jobs/*/.claude/rules/**/
+!projects/*/jobs/*/.claude/rules/odi-step-sql.md
+projects/*/jobs/*/.claude/skills/
+projects/*/jobs/*/.claude/workflows/
+projects/*/jobs/*/knowledge/reference/**
+!projects/*/jobs/*/knowledge/reference/**/
+!projects/*/jobs/*/knowledge/reference/claude-system.md
+# <<< ws:kit-managed

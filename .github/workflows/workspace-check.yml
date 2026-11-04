@@ -1,0 +1,23 @@
+# ตรวจ workspace ทุก PR และทุก push เข้า main (workspace.py check --ci · รวมตรวจ Wiki: หลักฐาน · ข้อมูลลับ · ไม่ลบประวัติ)
+name: workspace-check
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  workspace-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # Wiki: เทียบกับ base ว่าไม่มีบทเรียน (L#) หายไป
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: workspace check
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ -n "$BASE_REF" ]; then python tools/workspace.py check --ci --base "origin/$BASE_REF"; else python tools/workspace.py check --ci --base HEAD~1; fi
