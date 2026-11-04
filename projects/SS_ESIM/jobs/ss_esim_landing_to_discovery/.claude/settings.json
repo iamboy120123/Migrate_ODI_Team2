@@ -136,6 +136,16 @@
             "timeout": 20
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/hooks/guard_github.py\"",
+            "timeout": 20
+          }
+        ]
       }
     ],
     "PostToolUse": [
